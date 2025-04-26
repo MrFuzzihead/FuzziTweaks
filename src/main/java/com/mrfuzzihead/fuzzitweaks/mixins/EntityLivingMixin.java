@@ -31,10 +31,12 @@ public abstract class EntityLivingMixin extends EntityLivingBase {
     }
 
     @Inject(at = @At("TAIL"), method = "onLivingUpdate")
-    private void updatePersistanceStatus(CallbackInfo ci) {
+    private void updatePersistenceStatus(CallbackInfo ci) {
         if (Config.enableDespawnModule) {
             if (this.getHeldItem() != null) {
-                if (!this.hasCustomNameTag()) this.persistenceRequired = false;
+                if (!this.hasCustomNameTag()) {
+                    this.persistenceRequired = false;
+                }
             }
         }
     }
