@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mrfuzzihead.fuzzitweaks.Config;
@@ -33,18 +32,9 @@ public abstract class EntityLivingMixin extends EntityLivingBase {
     @Inject(at = @At("TAIL"), method = "onLivingUpdate")
     private void updatePersistenceStatus(CallbackInfo ci) {
         if (Config.enableDespawnModule) {
-            if (this.getHeldItem() != null) {
-                if (!this.hasCustomNameTag()) {
-                    this.persistenceRequired = false;
-                }
+            if (this.getHeldItem() != null && !this.hasCustomNameTag()) {
+                this.persistenceRequired = false;
             }
         }
-    }
-
-    @Redirect(
-        method = "despawnEntity",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/EntityLiving;setDead()V"))
-    private void despawnCheck(EntityLiving instance) {
-        this.setDead();
     }
 }

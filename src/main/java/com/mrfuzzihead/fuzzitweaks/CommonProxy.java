@@ -11,10 +11,6 @@ public class CommonProxy {
     // GameRegistry." (Remove if not needed)
     public void preInit(FMLPreInitializationEvent event) {
         Config.synchronizeConfiguration(event.getSuggestedConfigurationFile());
-
-        FuzziTweaks.LOG.info(Config.enableDespawnModule);
-        FuzziTweaks.LOG.info(Config.maxMobLightLevel);
-        FuzziTweaks.LOG.info("I am FuzziTweaks at version " + Tags.VERSION);
     }
 
     // load "Do your mod setup. Build whatever data structures you care about. Register recipes." (Remove if not needed)
