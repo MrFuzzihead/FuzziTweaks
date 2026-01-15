@@ -1,4 +1,4 @@
-package com.mrfuzzihead.fuzzitweaks.mixins;
+package com.mrfuzzihead.fuzzitweaks.mixins.early;
 
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;

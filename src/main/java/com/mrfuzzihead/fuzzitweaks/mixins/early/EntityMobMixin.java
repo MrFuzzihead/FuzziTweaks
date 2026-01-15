@@ -1,4 +1,4 @@
-package com.mrfuzzihead.fuzzitweaks.mixins;
+package com.mrfuzzihead.fuzzitweaks.mixins.early;
 
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.monster.EntityMob;
@@ -28,7 +28,7 @@ public class EntityMobMixin extends EntityCreature implements IMob {
     /**
      * @author MrFuzzihead
      * @reason Changing Minecraft hostile mob spawning in 1.7.10 to set valid light level
-     * as configurable value based on {@link #fuzziTweaks$maxMobLightLevel}
+     *         as configurable value based on {@link #fuzziTweaks$maxMobLightLevel}
      */
     @Overwrite
     protected boolean isValidLightLevel() {

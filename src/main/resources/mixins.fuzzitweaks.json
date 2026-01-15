@@ -1,12 +1,7 @@
 {
   "required": true,
-  "minVersion": "0.6",
-  "package": "com.mrfuzzihead.fuzzitweaks.mixins",
+  "minVersion": "0.8.5-GTNH",
   "refmap": "mixins.fuzzitweaks.refmap.json",
   "target": "@env(DEFAULT)",
-  "compatibilityLevel": "JAVA_8",
-  "mixins": [
-    "EntityLivingMixin",
-    "EntityMobMixin"
-  ]
+  "compatibilityLevel": "JAVA_8"
 }
