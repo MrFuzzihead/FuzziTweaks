@@ -7,14 +7,18 @@
 		"version": "${modVersion}",
 		"mcversion": "${minecraftVersion}",
 		"url": "https://github.com/MrFuzzihead/FuzziTweaks",
-		"updateUrl": "",
-		"authorList": ["MrFuzzihead"],
-		"credits": "",
+		"updateUrl": "https://github.com/MrFuzzihead/FuzziTweaks/releases/latest",
+		"authorList": [
+		  "MrFuzzihead"
+		],
+		"credits": "Credit to the GTNewHorizons team for keeping 1.7.10 modding alive, and frikinjay for the despawn module from Let Me Despawn.",
 		"logoFile": "",
 		"screenshots": [],
 		"parent": "",
 		"requiredMods": [],
-		"dependencies": [],
+		"dependencies": [
+		  "UniMixins"
+		],
 		"dependants": [],
 		"useDependencyInformation": false
 	}]
