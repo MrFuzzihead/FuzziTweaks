@@ -8,8 +8,10 @@ import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.mrfuzzihead.fuzzitweaks.Config;
 
@@ -25,31 +27,18 @@ public class EntityMobMixin extends EntityCreature implements IMob {
         this.fuzziTweaks$maxMobLightLevel = Config.maxMobLightLevel;
     }
 
-    /**
-     * @author MrFuzzihead
-     * @reason Changing Minecraft hostile mob spawning in 1.7.10 to set valid light level
-     *         as configurable value based on {@link #fuzziTweaks$maxMobLightLevel}
-     */
-    @Overwrite
-    protected boolean isValidLightLevel() {
+    @Inject(method = "isValidLightLevel", at = @At("TAIL"), cancellable = true)
+    protected void fuzziTweaks$redirectMaxLightLevelCheck(CallbackInfoReturnable<Boolean> cir) {
         int x = MathHelper.floor_double(this.posX);
-        int y = MathHelper.floor_double(this.posY);
+        int y = MathHelper.floor_double(this.boundingBox.minY);
         int z = MathHelper.floor_double(this.posZ);
+        int lightInclSky = this.worldObj.getBlockLightValue(x, y, z);
+        int lightExclSky = this.worldObj.getSavedLightValue(EnumSkyBlock.Block, x, y, z);
 
-        if (this.worldObj.getSavedLightValue(EnumSkyBlock.Sky, x, y, z) > this.rand.nextInt(32)) {
-            return false;
+        if (lightInclSky <= this.rand.nextInt(8) && lightExclSky <= this.fuzziTweaks$maxMobLightLevel) {
+            cir.setReturnValue(true);
         } else {
-            int lightInclSky = this.worldObj.getBlockLightValue(x, y, z);
-            int lightExclSky = this.worldObj.getSavedLightValue(EnumSkyBlock.Block, x, y, z);
-
-            if (this.worldObj.isThundering()) {
-                int tempSkyLightSubtracted = this.worldObj.skylightSubtracted;
-                this.worldObj.skylightSubtracted = 10;
-                lightInclSky = this.worldObj.getBlockLightValue(x, y, z);
-                this.worldObj.skylightSubtracted = tempSkyLightSubtracted;
-            }
-
-            return lightInclSky <= this.rand.nextInt(8) && lightExclSky <= fuzziTweaks$maxMobLightLevel;
+            cir.setReturnValue(false);
         }
     }
 }
