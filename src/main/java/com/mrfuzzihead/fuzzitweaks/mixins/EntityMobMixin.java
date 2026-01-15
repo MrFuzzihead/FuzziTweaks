@@ -9,18 +9,20 @@ import net.minecraft.world.World;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Unique;
 
 import com.mrfuzzihead.fuzzitweaks.Config;
 
 @Mixin(EntityMob.class)
 public class EntityMobMixin extends EntityCreature implements IMob {
 
-    protected int maxMobLightLevel;
+    @Unique
+    protected final int fuzziTweaks$maxMobLightLevel;
 
     public EntityMobMixin(World p_i1602_1_) {
         super(p_i1602_1_);
         this.experienceValue = 5;
-        this.maxMobLightLevel = Config.maxMobLightLevel;
+        this.fuzziTweaks$maxMobLightLevel = Config.maxMobLightLevel;
     }
 
     /**
@@ -39,17 +41,14 @@ public class EntityMobMixin extends EntityCreature implements IMob {
             int lightInclSky = this.worldObj.getBlockLightValue(x, y, z);
             int lightExclSky = this.worldObj.getSavedLightValue(EnumSkyBlock.Block, x, y, z);
 
-            /**
-             * If the world is thundering, mobs can spawn wherever the block's light level (excluding skylight) is lower
-             * than the maximum spawn light level.
-             * If the world is not thundering, mobs can begin spawning once the skylight reaches 7 and below. We will
-             * instead then take the block's light level (excluding skylight).
-             */
-            if (this.worldObj.isThundering() || lightInclSky < 8) {
-                return lightExclSky <= this.rand.nextInt(maxMobLightLevel + 1);
+            if (this.worldObj.isThundering()) {
+                int tempSkyLightSubtracted = this.worldObj.skylightSubtracted;
+                this.worldObj.skylightSubtracted = 10;
+                lightInclSky = this.worldObj.getBlockLightValue(x, y, z);
+                this.worldObj.skylightSubtracted = tempSkyLightSubtracted;
             }
 
-            return lightInclSky <= this.rand.nextInt(maxMobLightLevel + 1);
+            return lightInclSky <= this.rand.nextInt(8) && lightExclSky <= fuzziTweaks$maxMobLightLevel;
         }
     }
 }
