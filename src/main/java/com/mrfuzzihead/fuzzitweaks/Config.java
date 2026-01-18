@@ -10,6 +10,8 @@ public class Config {
 
     public static int maxMobLightLevel = 0;
 
+    public static boolean enableProjectETweaks = true;
+
     public static void synchronizeConfiguration(File configFile) {
         Configuration configuration = new Configuration(configFile);
 
@@ -26,6 +28,12 @@ public class Config {
             0,
             15,
             "Highest light level that hostile mobs will spawn at (0-15)");
+
+        enableProjectETweaks = configuration.getBoolean(
+            "EnableProjectETweaks",
+            Configuration.CATEGORY_GENERAL,
+            true,
+            "Enable fixes and tweaks for ProjectE");
 
         if (configuration.hasChanged()) {
             configuration.save();
