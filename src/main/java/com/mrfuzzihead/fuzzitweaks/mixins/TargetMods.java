@@ -9,13 +9,20 @@ public enum TargetMods implements ITargetMod {
 
     // Read the Javadoc of ITargetMod and TargetModBuilder for further information
     // Add to this enum information about the mods you need to identify during runtime
-    PROJECTE("moze_intel.projecte.PECore", "ProjectE");
+    PROJECTE("moze_intel.projecte.PECore", "ProjectE"),
+    THAUMICADDITIONS("com.pengu.thaumcraft.additions.TA", "thaumicadditions"),
+    HODGEPODGE("com.mitchej123.hodgepodge.Hodgepodge", "hodgepodge"),
+    NEI("NotEnoughItems");
 
     private final TargetModBuilder builder;
 
     TargetMods(String coreModClass, String modId) {
         this.builder = new TargetModBuilder().setCoreModClass(coreModClass)
             .setModId(modId);
+    }
+
+    TargetMods(String modId) {
+        this.builder = new TargetModBuilder().setModId(modId);
     }
 
     @Nonnull

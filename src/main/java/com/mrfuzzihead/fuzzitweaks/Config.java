@@ -8,9 +8,15 @@ public class Config {
 
     public static boolean enableDespawnModule = true;
 
-    public static int maxMobLightLevel = 0;
+    public static int maxMobBlockLightLevel = 0;
+
+    public static int maxMobSkyLightLevel = 7;
 
     public static boolean enableProjectETweaks = true;
+
+    public static boolean enableThaumicAdditionsTweaks = true;
+
+    public static boolean enableNEITweaks = true;
 
     public static void synchronizeConfiguration(File configFile) {
         Configuration configuration = new Configuration(configFile);
@@ -21,19 +27,39 @@ public class Config {
             true,
             "Enable module that lets mobs holding items/armor despawn");
 
-        maxMobLightLevel = configuration.getInt(
+        maxMobBlockLightLevel = configuration.getInt(
             "MaxMobSpawnLightLevel",
             Configuration.CATEGORY_GENERAL,
             0,
             0,
             15,
-            "Highest light level that hostile mobs will spawn at (0-15)");
+            "Highest light level that hostile mobs will spawn at (0-15), using block light");
+
+        maxMobSkyLightLevel = configuration.getInt(
+            "MaxMobSkyLightLevel",
+            Configuration.CATEGORY_GENERAL,
+            0,
+            0,
+            15,
+            "Highest light level that hostile mobs will spawn at (0-15), using sky light");
 
         enableProjectETweaks = configuration.getBoolean(
             "EnableProjectETweaks",
             Configuration.CATEGORY_GENERAL,
             true,
             "Enable fixes and tweaks for ProjectE");
+
+        enableThaumicAdditionsTweaks = configuration.getBoolean(
+            "EnableThaumicAdditionsTweaks",
+            Configuration.CATEGORY_GENERAL,
+            true,
+            "Enable fixes and tweaks for Thaumic Additions");
+
+        enableNEITweaks = configuration.getBoolean(
+            "EnableNEITweaks",
+            Configuration.CATEGORY_GENERAL,
+            true,
+            "Enable fixes and tweaks for Not Enough Items");
 
         if (configuration.hasChanged()) {
             configuration.save();

@@ -34,6 +34,7 @@
  * For more details, see https://docs.gradle.org/8.0.1/userguide/java_library_plugin.html#sec:java_library_configurations_graph
  */
 dependencies {
-    runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.7.4-GTNH:dev")
-    devOnlyNonPublishable(rfg.deobf("curse.maven:ProjectE-226410:2340786"))
+    implementation("com.github.GTNewHorizons:NotEnoughItems:2.8.93-GTNH:dev")
+    compileOnly(rfg.deobf("curse.maven:ProjectE-226410:2340786"))
+    compileOnly(rfg.deobf("curse.maven:ThaumicAdditions-232564:2417787"))
 }

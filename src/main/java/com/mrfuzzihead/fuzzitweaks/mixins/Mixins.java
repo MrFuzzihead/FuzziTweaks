@@ -11,12 +11,26 @@ public enum Mixins implements IMixins {
     // Read the Javadoc of IMixins and MixinBuilder for further information
     // You should declare all of your mixins early and late in this same enum
     MINECRAFT(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityMobMixin", "EntityLivingMixin")),
+        .addCommonMixins("EntityMobMixin")),
+
+    MINECRAFTEXCLHODGEPODGE(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("EntityLivingMixin", "TileEntityRendererDispatcherMixin")
+        .addExcludedMod(TargetMods.HODGEPODGE)),
 
     PROJECTE(new MixinBuilder().setPhase(Phase.LATE)
         .addCommonMixins("projecte.ItemSearchHelperMixin")
         .addRequiredMod(TargetMods.PROJECTE)
-        .setApplyIf(() -> Config.enableProjectETweaks));
+        .setApplyIf(() -> Config.enableProjectETweaks)),
+
+    THAUMICADDITIONS(new MixinBuilder().setPhase(Phase.LATE)
+        .addClientMixins("thaumicadditions.KeyBindingsMixin")
+        .addRequiredMod(TargetMods.THAUMICADDITIONS)
+        .setApplyIf(() -> Config.enableThaumicAdditionsTweaks)),
+
+    NOTENOUGHITEMS(new MixinBuilder().setPhase(Phase.LATE)
+        .addClientMixins("notenoughitems.MixinWorldOverlayRenderer")
+        .addRequiredMod(TargetMods.NEI)
+        .setApplyIf(() -> Config.enableNEITweaks));
 
     private final MixinBuilder builder;
 
