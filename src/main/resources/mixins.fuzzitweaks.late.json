@@ -8,6 +8,7 @@
   "mixins": [
     "notenoughitems.MixinWorldOverlayRenderer",
     "projecte.ItemSearchHelperMixin",
-    "thaumicadditions.KeyBindingsMixin"
+    "thaumicadditions.KeyBindingsMixin",
+    "mcpatcher.MobEngineMixin"
   ]
 }

@@ -18,6 +18,8 @@ public class Config {
 
     public static boolean enableNEITweaks = true;
 
+    public static boolean enableMCPatcherTweaks = true;
+
     public static void synchronizeConfiguration(File configFile) {
         Configuration configuration = new Configuration(configFile);
 
@@ -60,6 +62,12 @@ public class Config {
             Configuration.CATEGORY_GENERAL,
             true,
             "Enable fixes and tweaks for Not Enough Items");
+
+        enableMCPatcherTweaks = configuration.getBoolean(
+            "EnableMCPatcherTweaks",
+            Configuration.CATEGORY_GENERAL,
+            true,
+            "Enable fixes and tweaks for MCPatcher");
 
         if (configuration.hasChanged()) {
             configuration.save();
