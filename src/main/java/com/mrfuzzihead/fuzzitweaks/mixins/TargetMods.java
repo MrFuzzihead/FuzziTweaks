@@ -12,7 +12,8 @@ public enum TargetMods implements ITargetMod {
     PROJECTE("moze_intel.projecte.PECore", "ProjectE"),
     THAUMICADDITIONS("com.pengu.thaumcraft.additions.TA", "thaumicadditions"),
     HODGEPODGE("com.mitchej123.hodgepodge.Hodgepodge", "hodgepodge"),
-    NEI("NotEnoughItems");
+    NEI("NotEnoughItems"),
+    MCPATCHER("mcpatcher");
 
     private final TargetModBuilder builder;
 

@@ -13,11 +13,13 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
     name = "FuzziTweaks",
     acceptedMinecraftVersions = "[1.7.10]",
     acceptableRemoteVersions = "*",
+    dependencies = FuzziTweaks.DEPENDENCIES,
     useMetadata = true)
 public class FuzziTweaks {
 
     public static final String MODID = "fuzzitweaks";
     public static final Logger LOG = LogManager.getLogger(MODID);
+    public static final String DEPENDENCIES = "after:ProjectE;after:thaumicadditions;after:NotEnoughItems;after:mcpatcher";
 
     @SidedProxy(
         clientSide = "com.mrfuzzihead.fuzzitweaks.ClientProxy",

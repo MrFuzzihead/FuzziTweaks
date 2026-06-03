@@ -37,4 +37,6 @@ dependencies {
     implementation("com.github.GTNewHorizons:NotEnoughItems:2.8.93-GTNH:dev")
     compileOnly(rfg.deobf("curse.maven:ProjectE-226410:2340786"))
     compileOnly(rfg.deobf("curse.maven:ThaumicAdditions-232564:2417787"))
+    compileOnly("com.falsepattern:mcpatcher-mc1.7.10:0.3.0:dev")
+    compileOnly("it.unimi.dsi:fastutil:8.5.16")
 }

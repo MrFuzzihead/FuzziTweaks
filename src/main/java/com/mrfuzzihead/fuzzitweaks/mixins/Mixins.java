@@ -30,7 +30,12 @@ public enum Mixins implements IMixins {
     NOTENOUGHITEMS(new MixinBuilder().setPhase(Phase.LATE)
         .addClientMixins("notenoughitems.MixinWorldOverlayRenderer")
         .addRequiredMod(TargetMods.NEI)
-        .setApplyIf(() -> Config.enableNEITweaks));
+        .setApplyIf(() -> Config.enableNEITweaks)),
+
+    MCPATCHER(new MixinBuilder().setPhase(Phase.LATE)
+        .addClientMixins("mcpatcher.MobEngineMixin")
+        .addRequiredMod(TargetMods.MCPATCHER)
+        .setApplyIf(() -> Config.enableMCPatcherTweaks));
 
     private final MixinBuilder builder;
 
