@@ -1,11 +1,16 @@
 package com.mrfuzzihead.fuzzitweaks.mixins.late.notenoughitems;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.entity.passive.EntityPig;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.SpawnerAnimals;
 import net.minecraft.world.chunk.Chunk;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 
 import com.mrfuzzihead.fuzzitweaks.Config;
 
@@ -14,37 +19,42 @@ import codechicken.nei.WorldOverlayRenderer;
 @Mixin(WorldOverlayRenderer.class)
 public class MixinWorldOverlayRenderer {
 
-    /**
-     * Redirects the block light check in getSpawnMode.
-     * Returns 8 (triggering "no spawn") when block light exceeds the configured max,
-     * otherwise returns 0 so the vanilla >= 8 check passes through as spawnable.
-     */
-    @Redirect(
-        method = "getSpawnMode",
-        remap = false,
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/world/chunk/Chunk;getSavedLightValue(Lnet/minecraft/world/EnumSkyBlock;III)I",
-            ordinal = 0))
-    private static int fuzziTweaks$redirectBlockLightCheck(Chunk chunk, EnumSkyBlock type, int x, int y, int z) {
-        int actualLight = chunk.getSavedLightValue(type, x, y, z);
-        return actualLight > Config.maxMobBlockLightLevel ? 8 : 0;
-    }
+    @Shadow(remap = false)
+    private static final Entity dummyEntity = new EntityPig(null);
+    @Shadow(remap = false)
+    private static final AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox(0, 0, 0, 0, 0, 0);
 
     /**
-     * Redirects the skylight check in getSpawnMode.
-     * Returns 8 (yellow X — night-only spawn) when skylight exceeds the configured max,
-     * otherwise returns 0 (red X — always spawnable).
+     * @author FuzziTweaks
+     * @reason ASD
      */
-    @Redirect(
-        method = "getSpawnMode",
-        remap = false,
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/world/chunk/Chunk;getSavedLightValue(Lnet/minecraft/world/EnumSkyBlock;III)I",
-            ordinal = 1))
-    private static int fuzziTweaks$redirectSkyLightCheck(Chunk chunk, EnumSkyBlock type, int x, int y, int z) {
-        int actualLight = chunk.getSavedLightValue(type, x, y, z);
-        return actualLight > Config.maxMobSkyLightLevel ? 8 : 0;
+    @Overwrite(remap = false)
+    private static byte getSpawnMode(Chunk chunk, int x, int y, int z) {
+        // Above world height, no spawns here
+        if (y >= chunk.worldObj.getHeight()) {
+            return 0;
+        }
+
+        // Block light check (supersedes skylight value check)
+        if (chunk.getSavedLightValue(EnumSkyBlock.Block, x & 15, y, z & 15) > Config.maxMobBlockLightLevel
+            || !SpawnerAnimals.canCreatureTypeSpawnAtLocation(EnumCreatureType.monster, chunk.worldObj, x, y, z)) {
+            return 0;
+        }
+
+        aabb.minX = x + 0.2;
+        aabb.maxX = x + 0.8;
+        aabb.minY = y + 0.01;
+        aabb.maxY = y + 1.8;
+        aabb.minZ = z + 0.2;
+        aabb.maxZ = z + 0.8;
+        if (!chunk.worldObj.getCollidingBoundingBoxes(dummyEntity, aabb)
+            .isEmpty() || chunk.worldObj.isAnyLiquid(aabb)) {
+            return 0;
+        }
+
+        // Sky light check
+        return (byte) (chunk.getSavedLightValue(EnumSkyBlock.Sky, x & 15, y, z & 15) >= (Config.maxMobSkyLightLevel + 1)
+            ? 1
+            : 2);
     }
 }

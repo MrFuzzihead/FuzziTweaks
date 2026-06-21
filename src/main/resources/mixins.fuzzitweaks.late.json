@@ -4,11 +4,5 @@
   "package": "com.mrfuzzihead.fuzzitweaks.mixins.late",
   "refmap": "mixins.fuzzitweaks.refmap.json",
   "target": "@env(DEFAULT)",
-  "compatibilityLevel": "JAVA_8",
-  "mixins": [
-    "notenoughitems.MixinWorldOverlayRenderer",
-    "projecte.ItemSearchHelperMixin",
-    "thaumicadditions.KeyBindingsMixin",
-    "mcpatcher.MobEngineMixin"
-  ]
+  "compatibilityLevel": "JAVA_8"
 }

@@ -40,7 +40,7 @@ public class Config {
         maxMobSkyLightLevel = configuration.getInt(
             "MaxMobSkyLightLevel",
             Configuration.CATEGORY_GENERAL,
-            0,
+            7,
             0,
             15,
             "Highest light level that hostile mobs will spawn at (0-15), using sky light");

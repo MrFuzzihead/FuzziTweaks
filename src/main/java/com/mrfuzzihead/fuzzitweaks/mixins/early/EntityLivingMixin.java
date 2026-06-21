@@ -11,8 +11,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.mrfuzzihead.fuzzitweaks.Config;
-
 @Mixin(EntityLiving.class)
 public abstract class EntityLivingMixin extends EntityLivingBase {
 
@@ -31,10 +29,8 @@ public abstract class EntityLivingMixin extends EntityLivingBase {
 
     @Inject(at = @At("TAIL"), method = "onLivingUpdate")
     private void updatePersistenceStatus(CallbackInfo ci) {
-        if (Config.enableDespawnModule) {
-            if (this.getHeldItem() != null && !this.hasCustomNameTag()) {
-                this.persistenceRequired = false;
-            }
+        if (this.getHeldItem() != null && !this.hasCustomNameTag()) {
+            this.persistenceRequired = false;
         }
     }
 }

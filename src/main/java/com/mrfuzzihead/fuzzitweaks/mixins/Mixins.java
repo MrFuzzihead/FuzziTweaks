@@ -11,11 +11,12 @@ public enum Mixins implements IMixins {
     // Read the Javadoc of IMixins and MixinBuilder for further information
     // You should declare all of your mixins early and late in this same enum
     MINECRAFT(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityMobMixin")),
+        .addCommonMixins("EntityMobMixin", "TileEntityRendererDispatcherMixin")),
 
     MINECRAFTEXCLHODGEPODGE(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityLivingMixin", "TileEntityRendererDispatcherMixin")
-        .addExcludedMod(TargetMods.HODGEPODGE)),
+        .addCommonMixins("EntityLivingMixin")
+        .addExcludedMod(TargetMods.HODGEPODGE)
+        .setApplyIf(() -> Config.enableDespawnModule)),
 
     PROJECTE(new MixinBuilder().setPhase(Phase.LATE)
         .addCommonMixins("projecte.ItemSearchHelperMixin")
