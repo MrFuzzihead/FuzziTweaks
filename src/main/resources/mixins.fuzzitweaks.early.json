@@ -4,10 +4,5 @@
   "package": "com.mrfuzzihead.fuzzitweaks.mixins.early",
   "refmap": "mixins.fuzzitweaks.refmap.json",
   "target": "@env(DEFAULT)",
-  "compatibilityLevel": "JAVA_8",
-  "mixins": [
-    "EntityLivingMixin",
-    "EntityMobMixin",
-    "TileEntityRendererDispatcherMixin"
-  ]
+  "compatibilityLevel": "JAVA_8"
 }
