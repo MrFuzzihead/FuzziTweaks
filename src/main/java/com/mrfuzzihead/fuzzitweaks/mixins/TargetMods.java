@@ -13,7 +13,8 @@ public enum TargetMods implements ITargetMod {
     THAUMICADDITIONS("com.pengu.thaumcraft.additions.TA", "thaumicadditions"),
     HODGEPODGE("com.mitchej123.hodgepodge.Hodgepodge", "hodgepodge"),
     NEI("NotEnoughItems"),
-    MCPATCHER("mcpatcher");
+    MCPATCHER("mcpatcher"),
+    DISTANTHORIZONS("distanthorizons");
 
     private final TargetModBuilder builder;
 

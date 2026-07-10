@@ -36,7 +36,17 @@ public enum Mixins implements IMixins {
     MCPATCHER(new MixinBuilder().setPhase(Phase.LATE)
         .addClientMixins("mcpatcher.MobEngineMixin")
         .addRequiredMod(TargetMods.MCPATCHER)
-        .setApplyIf(() -> Config.enableMCPatcherTweaks));
+        .setApplyIf(() -> Config.enableMCPatcherTweaks)),
+
+    DISTANTHORIZONS_SERVER(new MixinBuilder().setPhase(Phase.LATE)
+        .addCommonMixins("distanthorizons.MixinAbstractDhServerLevel")
+        .addRequiredMod(TargetMods.DISTANTHORIZONS)
+        .setApplyIf(() -> Config.enableDistantHorizonsDimensionFilter)),
+
+    DISTANTHORIZONS_CLIENT(new MixinBuilder().setPhase(Phase.LATE)
+        .addClientMixins("distanthorizons.MixinDhClientLevel")
+        .addRequiredMod(TargetMods.DISTANTHORIZONS)
+        .setApplyIf(() -> Config.enableDistantHorizonsDimensionFilter));
 
     private final MixinBuilder builder;
 
