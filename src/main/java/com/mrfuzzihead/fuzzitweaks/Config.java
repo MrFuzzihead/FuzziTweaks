@@ -6,8 +6,23 @@ import net.minecraftforge.common.config.Configuration;
 
 public class Config {
 
+    /** Category used for Minecraft tweak settings. */
+    public static final String CATEGORY_MINECRAFT = "minecraft";
+
     /** Category used for the Distant Horizons per-dimension LOD generation filter settings. */
     public static final String CATEGORY_DISTANT_HORIZONS = "distanthorizons";
+
+    /** Category used for ProjectE tweaks settings. */
+    public static final String CATEGORY_PROJECTE = "projecte";
+
+    /** Category used for Thaumic Additions tweaks settings. */
+    public static final String CATEGORY_THAUMIC_ADDITIONS = "thaumicadditions";
+
+    /** Category used for Not Enough Items tweaks settings. */
+    public static final String CATEGORY_NEI = "nei";
+
+    /** Category used for MCPatcher tweaks settings. */
+    public static final String CATEGORY_MCPATCHER = "mcpatcher";
 
     public static boolean enableDespawnModule = true;
 
@@ -25,7 +40,7 @@ public class Config {
 
     public static boolean enableDistantHorizonsDimensionFilter = true;
 
-    public static int[] distantHorizonsDimensionIds = new int[0];
+    public static int[] distantHorizonsDimensionIds = new int[] { 0 };
 
     /**
      * If {@code true}, {@link #distantHorizonsDimensionIds} is treated as a denylist (every
@@ -39,13 +54,13 @@ public class Config {
 
         enableDespawnModule = configuration.getBoolean(
             "EnableDespawnModule",
-            Configuration.CATEGORY_GENERAL,
+            CATEGORY_MINECRAFT,
             true,
             "Enable module that lets mobs holding items/armor despawn");
 
         maxMobBlockLightLevel = configuration.getInt(
             "MaxMobSpawnLightLevel",
-            Configuration.CATEGORY_GENERAL,
+            CATEGORY_MINECRAFT,
             0,
             0,
             15,
@@ -53,35 +68,26 @@ public class Config {
 
         maxMobSkyLightLevel = configuration.getInt(
             "MaxMobSkyLightLevel",
-            Configuration.CATEGORY_GENERAL,
+            CATEGORY_MINECRAFT,
             7,
             0,
             15,
             "Highest light level that hostile mobs will spawn at (0-15), using sky light");
 
-        enableProjectETweaks = configuration.getBoolean(
-            "EnableProjectETweaks",
-            Configuration.CATEGORY_GENERAL,
-            true,
-            "Enable fixes and tweaks for ProjectE");
+        enableProjectETweaks = configuration
+            .getBoolean("EnableProjectETweaks", CATEGORY_PROJECTE, true, "Enable fixes and tweaks for ProjectE");
 
         enableThaumicAdditionsTweaks = configuration.getBoolean(
             "EnableThaumicAdditionsTweaks",
-            Configuration.CATEGORY_GENERAL,
+            CATEGORY_THAUMIC_ADDITIONS,
             true,
             "Enable fixes and tweaks for Thaumic Additions");
 
-        enableNEITweaks = configuration.getBoolean(
-            "EnableNEITweaks",
-            Configuration.CATEGORY_GENERAL,
-            true,
-            "Enable fixes and tweaks for Not Enough Items");
+        enableNEITweaks = configuration
+            .getBoolean("EnableNEITweaks", CATEGORY_NEI, true, "Enable fixes and tweaks for Not Enough Items");
 
-        enableMCPatcherTweaks = configuration.getBoolean(
-            "EnableMCPatcherTweaks",
-            Configuration.CATEGORY_GENERAL,
-            true,
-            "Enable fixes and tweaks for MCPatcher");
+        enableMCPatcherTweaks = configuration
+            .getBoolean("EnableMCPatcherTweaks", CATEGORY_MCPATCHER, true, "Enable fixes and tweaks for MCPatcher");
 
         enableDistantHorizonsDimensionFilter = configuration.getBoolean(
             "EnableDistantHorizonsDimensionFilter",
