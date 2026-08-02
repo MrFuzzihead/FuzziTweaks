@@ -1,11 +1,17 @@
-package com.mrfuzzihead.fuzzitweaks.mixins.late.distanthorizons;
+package com.mrfuzzihead.fuzzitweaks.common;
 
 import com.mrfuzzihead.fuzzitweaks.Config;
 
 /**
- * Shared allow/deny check used by {@link MixinAbstractDhServerLevel} and
- * {@link MixinDhClientLevel} to decide whether Distant Horizons should be allowed to generate LOD
- * data for a given dimension.
+ * Shared allow/deny check used by the Distant Horizons mixins to decide whether DH should be
+ * allowed to generate LOD data for a given dimension.
+ *
+ * <p>
+ * This deliberately lives <em>outside</em> the {@code com.mrfuzzihead.fuzzitweaks.mixins}
+ * package tree. Helper classes referenced from {@code @Inject} handler bodies must not sit inside
+ * a mixin package: the mixin transformer would otherwise try to sweep the class up as a mixin
+ * candidate and fail to transform it, surfacing at runtime as a {@link NoClassDefFoundError} /
+ * {@code ClassNotFoundException} on every call to the handler.
  */
 public final class DistantHorizonsDimensionFilter {
 
