@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.mrfuzzihead.fuzzitweaks.Config;
+import com.mrfuzzihead.fuzzitweaks.common.DistantHorizonsDimensionFilter;
 import com.seibel.distanthorizons.core.level.AbstractDhLevel;
 import com.seibel.distanthorizons.core.level.DhClientLevel;
 import com.seibel.distanthorizons.core.wrapperInterfaces.world.IClientLevelWrapper;
