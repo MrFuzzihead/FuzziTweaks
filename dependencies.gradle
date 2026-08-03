@@ -38,6 +38,7 @@ dependencies {
     compileOnly(rfg.deobf("curse.maven:ProjectE-226410:2340786"))
     compileOnly(rfg.deobf("curse.maven:ThaumicAdditions-232564:2417787"))
     compileOnly("com.falsepattern:mcpatcher-mc1.7.10:0.3.0:dev")
+    compileOnly("com.github.GTNewHorizons:Galacticraft:3.4.32-GTNH:dev")
     compileOnly("it.unimi.dsi:fastutil:8.5.16")
     compileOnly(project.files("libs/distanthorizons-alpha20-dev.jar"))
 }

@@ -24,6 +24,9 @@ public class Config {
     /** Category used for MCPatcher tweaks settings. */
     public static final String CATEGORY_MCPATCHER = "mcpatcher";
 
+    /** Category used for Galacticraft tweaks settings. */
+    public static final String CATEGORY_GALACTICRAFT = "galacticraft";
+
     public static boolean enableDespawnModule = true;
 
     public static int maxMobBlockLightLevel = 0;
@@ -37,6 +40,10 @@ public class Config {
     public static boolean enableNEITweaks = true;
 
     public static boolean enableMCPatcherTweaks = true;
+
+    public static boolean enableGalacticraftCoalGeneratorFuelTweak = true;
+
+    public static boolean enableGalacticraftCompressorNEIFix = true;
 
     public static boolean enableDistantHorizonsDimensionFilter = true;
 
@@ -88,6 +95,21 @@ public class Config {
 
         enableMCPatcherTweaks = configuration
             .getBoolean("EnableMCPatcherTweaks", CATEGORY_MCPATCHER, true, "Enable fixes and tweaks for MCPatcher");
+
+        enableGalacticraftCoalGeneratorFuelTweak = configuration.getBoolean(
+            "EnableGalacticraftCoalGeneratorFuelTweak",
+            CATEGORY_GALACTICRAFT,
+            true,
+            "Allow the Galacticraft Coal Generator to burn any furnace-burnable item (charcoal, wood, etc.), "
+                + "scaled to each item's vanilla furnace burn time.");
+
+        enableGalacticraftCompressorNEIFix = configuration.getBoolean(
+            "EnableGalacticraftCompressorNEIFix",
+            CATEGORY_GALACTICRAFT,
+            true,
+            "Re-register GC's Ingot/Electric-Ingot Compressor NEI handlers. The GTNH Galacticraft fork comments "
+                + "these out (it expects GregTech's Implosion Compressor to show them), so the GC Compressor "
+                + "recipes never appear in NEI when GregTech isn't present.");
 
         enableDistantHorizonsDimensionFilter = configuration.getBoolean(
             "EnableDistantHorizonsDimensionFilter",
