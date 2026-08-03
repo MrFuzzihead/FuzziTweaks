@@ -14,7 +14,8 @@ public enum TargetMods implements ITargetMod {
     HODGEPODGE("com.mitchej123.hodgepodge.Hodgepodge", "hodgepodge"),
     NEI("NotEnoughItems"),
     MCPATCHER("mcpatcher"),
-    DISTANTHORIZONS("distanthorizons");
+    DISTANTHORIZONS("distanthorizons"),
+    GALACTICRAFT("micdoodle8.mods.galacticraft.core.GalacticraftCore", "GalacticraftCore");
 
     private final TargetModBuilder builder;
 

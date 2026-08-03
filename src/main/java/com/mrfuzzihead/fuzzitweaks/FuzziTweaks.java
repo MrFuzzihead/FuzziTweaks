@@ -1,8 +1,5 @@
 package com.mrfuzzihead.fuzzitweaks;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -10,16 +7,15 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 @Mod(
     modid = FuzziTweaks.MODID,
     version = Tags.VERSION,
-    name = "FuzziTweaks",
+    name = FuzziTweaks.MODNAME,
     acceptedMinecraftVersions = "[1.7.10]",
     acceptableRemoteVersions = "*",
-    dependencies = FuzziTweaks.DEPENDENCIES,
-    useMetadata = true)
+    dependencies = FuzziTweaks.DEPENDENCIES)
 public class FuzziTweaks {
 
     public static final String MODID = "fuzzitweaks";
-    public static final Logger LOG = LogManager.getLogger(MODID);
-    public static final String DEPENDENCIES = "after:ProjectE;after:thaumicadditions;after:NotEnoughItems;after:mcpatcher";
+    public static final String MODNAME = "FuzziTweaks";
+    public static final String DEPENDENCIES = "after:ProjectE;after:thaumicadditions;after:NotEnoughItems;after:mcpatcher;after:GalacticraftCore;after:distanthorizons";
 
     @SidedProxy(
         clientSide = "com.mrfuzzihead.fuzzitweaks.ClientProxy",

@@ -46,7 +46,17 @@ public enum Mixins implements IMixins {
     DISTANTHORIZONS_CLIENT(new MixinBuilder().setPhase(Phase.LATE)
         .addClientMixins("distanthorizons.MixinDhClientLevel")
         .addRequiredMod(TargetMods.DISTANTHORIZONS)
-        .setApplyIf(() -> Config.enableDistantHorizonsDimensionFilter));
+        .setApplyIf(() -> Config.enableDistantHorizonsDimensionFilter)),
+
+    GALACTICRAFT_COAL_GENERATOR(new MixinBuilder().setPhase(Phase.LATE)
+        .addCommonMixins("galacticraft.TileEntityCoalGeneratorMixin", "galacticraft.SlotSpecificMixin")
+        .addRequiredMod(TargetMods.GALACTICRAFT)
+        .setApplyIf(() -> Config.enableGalacticraftCoalGeneratorFuelTweak)),
+
+    GALACTICRAFT_NEI_HANDLERS(new MixinBuilder().setPhase(Phase.LATE)
+        .addClientMixins("galacticraft.NEIGalacticraftConfigMixin")
+        .addRequiredMod(TargetMods.GALACTICRAFT)
+        .setApplyIf(() -> Config.enableGalacticraftCompressorNEIFix));
 
     private final MixinBuilder builder;
 
