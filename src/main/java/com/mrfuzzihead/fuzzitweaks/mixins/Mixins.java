@@ -8,8 +8,6 @@ import com.mrfuzzihead.fuzzitweaks.Config;
 
 public enum Mixins implements IMixins {
 
-    // Read the Javadoc of IMixins and MixinBuilder for further information
-    // You should declare all of your mixins early and late in this same enum
     MINECRAFT(new MixinBuilder().setPhase(Phase.EARLY)
         .addCommonMixins("EntityMobMixin", "TileEntityRendererDispatcherMixin")),
 
@@ -17,6 +15,10 @@ public enum Mixins implements IMixins {
         .addCommonMixins("EntityLivingMixin")
         .addExcludedMod(TargetMods.HODGEPODGE)
         .setApplyIf(() -> Config.enableDespawnModule)),
+
+    SCREENSHOT(new MixinBuilder().setPhase(Phase.EARLY)
+        .addClientMixins("MinecraftMixin")
+        .setApplyIf(() -> Config.enableBackgroundScreenshot)),
 
     PROJECTE(new MixinBuilder().setPhase(Phase.LATE)
         .addCommonMixins("projecte.ItemSearchHelperMixin")
