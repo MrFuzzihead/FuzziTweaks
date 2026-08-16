@@ -17,15 +17,14 @@ import com.mrfuzzihead.fuzzitweaks.client.ThreadedScreenshot;
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin {
 
-    @WrapOperation(method = "func_152348_aa",
-        at = @At(value = "INVOKE",
+    @WrapOperation(
+        method = "func_152348_aa",
+        at = @At(
+            value = "INVOKE",
             target = "Lnet/minecraft/util/ScreenShotHelper;saveScreenshot(Ljava/io/File;IILnet/minecraft/client/shader/Framebuffer;)Lnet/minecraft/util/IChatComponent;"),
         require = 1)
-    private IChatComponent captureScreenshot(File gameDirectory,
-                                             int requestedWidthInPixels,
-                                             int requestedHeightInPixels,
-                                             Framebuffer frameBuffer,
-                                             Operation<IChatComponent> original) {
+    private IChatComponent captureScreenshot(File gameDirectory, int requestedWidthInPixels,
+        int requestedHeightInPixels, Framebuffer frameBuffer, Operation<IChatComponent> original) {
         if (OpenGlHelper.isFramebufferEnabled()) {
             return ThreadedScreenshot.capture(gameDirectory, frameBuffer);
         } else {

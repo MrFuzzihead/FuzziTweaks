@@ -27,12 +27,14 @@ import cpw.mods.fml.common.gameevent.TickEvent;
  * compression and writing to disk) on a background thread so that pressing the
  * screenshot key does not stall the client.
  *
- * <p>Timing is handled with a tiny state machine so that spamming the key while
+ * <p>
+ * Timing is handled with a tiny state machine so that spamming the key while
  * a capture is already in flight is rejected instead of queuing unbounded work.
  * A client tick subscriber performs the (verified thread-safe) chat message
  * print on the main thread once the background thread has finished writing.
  *
- * <p>This is an original implementation of an approach popularised by the
+ * <p>
+ * This is an original implementation of an approach popularised by the
  * (OSL-3.0) SwanSong mod; no source code from that project is used here.
  */
 public final class ThreadedScreenshot {
@@ -54,7 +56,9 @@ public final class ThreadedScreenshot {
      * pre-init.
      */
     public static void init() {
-        FMLCommonHandler.instance().bus().register(new ThreadedScreenshot());
+        FMLCommonHandler.instance()
+            .bus()
+            .register(new ThreadedScreenshot());
     }
 
     /**
@@ -191,4 +195,3 @@ public final class ThreadedScreenshot {
         }
     }
 }
-
