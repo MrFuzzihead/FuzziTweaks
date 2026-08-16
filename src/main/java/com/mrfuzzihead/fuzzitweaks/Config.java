@@ -29,6 +29,8 @@ public class Config {
 
     public static boolean enableDespawnModule = true;
 
+    public static boolean enableBackgroundScreenshot = true;
+
     public static int maxMobBlockLightLevel = 0;
 
     public static int maxMobSkyLightLevel = 7;
@@ -80,6 +82,12 @@ public class Config {
             0,
             15,
             "Highest light level that hostile mobs will spawn at (0-15), using sky light");
+
+        enableBackgroundScreenshot = configuration.getBoolean(
+            "EnableBackgroundScreenshot",
+            CATEGORY_MINECRAFT,
+            true,
+            "Take screenshots (F2) off the main thread so the game doesn't freeze while the PNG is written");
 
         enableProjectETweaks = configuration
             .getBoolean("EnableProjectETweaks", CATEGORY_PROJECTE, true, "Enable fixes and tweaks for ProjectE");
