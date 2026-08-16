@@ -71,7 +71,8 @@ public abstract class TileEntityCoalGeneratorMixin {
             value = "FIELD",
             opcode = Opcodes.PUTFIELD,
             target = "Lmicdoodle8/mods/galacticraft/core/tile/TileEntityCoalGenerator;itemCookTime:I",
-            shift = At.Shift.AFTER))
+            shift = At.Shift.AFTER,
+            remap = false))
     private void fuzziTweaks$scaleBurnTime(CallbackInfo ci) {
         ItemStack fuel = this.containingItems.length > 0 ? this.containingItems[0] : null;
         if (fuel != null) {
