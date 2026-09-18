@@ -58,7 +58,12 @@ public enum Mixins implements IMixins {
     GALACTICRAFT_NEI_HANDLERS(new MixinBuilder().setPhase(Phase.LATE)
         .addClientMixins("galacticraft.NEIGalacticraftConfigMixin")
         .addRequiredMod(TargetMods.GALACTICRAFT)
-        .setApplyIf(() -> Config.enableGalacticraftCompressorNEIFix));
+        .setApplyIf(() -> Config.enableGalacticraftCompressorNEIFix)),
+
+    ARTIFICE(new MixinBuilder().setPhase(Phase.LATE)
+        .addCommonMixins("artifice.ArtificeEnchantsMixin")
+        .addRequiredMod(TargetMods.ARTIFICE)
+        .setApplyIf(() -> Config.enableArtificeEnchantIdFix));
 
     private final MixinBuilder builder;
 
