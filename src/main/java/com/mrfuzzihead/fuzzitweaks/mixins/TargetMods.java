@@ -15,7 +15,8 @@ public enum TargetMods implements ITargetMod {
     NEI("NotEnoughItems"),
     MCPATCHER("mcpatcher"),
     DISTANTHORIZONS("distanthorizons"),
-    GALACTICRAFT("micdoodle8.mods.galacticraft.core.GalacticraftCore", "GalacticraftCore");
+    GALACTICRAFT("micdoodle8.mods.galacticraft.core.GalacticraftCore", "GalacticraftCore"),
+    ARTIFICE("Artifice");
 
     private final TargetModBuilder builder;
 

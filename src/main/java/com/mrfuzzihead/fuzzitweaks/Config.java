@@ -27,6 +27,9 @@ public class Config {
     /** Category used for Galacticraft tweaks settings. */
     public static final String CATEGORY_GALACTICRAFT = "galacticraft";
 
+    /** Category used for Artifice tweaks settings. */
+    public static final String CATEGORY_ARTIFICE = "artifice";
+
     public static boolean enableDespawnModule = true;
 
     public static boolean enableBackgroundScreenshot = true;
@@ -48,6 +51,8 @@ public class Config {
     public static boolean enableGalacticraftCompressorNEIFix = true;
 
     public static boolean enableDistantHorizonsDimensionFilter = true;
+
+    public static boolean enableArtificeEnchantIdFix = true;
 
     public static int[] distantHorizonsDimensionIds = new int[] { 0 };
 
@@ -139,6 +144,15 @@ public class Config {
             true,
             "If true, DimensionIds is a denylist: Distant Horizons generates LODs everywhere except those dimensions. "
                 + "If false, DimensionIds is an allowlist: Distant Horizons only generates LODs in those dimensions.");
+
+        enableArtificeEnchantIdFix = configuration.getBoolean(
+            "EnableArtificeEnchantIdFix",
+            CATEGORY_ARTIFICE,
+            true,
+            "Fixes Artifice registering all of its enabled enchantments on the same enchantment ID "
+                + "when an ID conflict detector replaces the vanilla Enchantment constructor "
+                + "(its registration loop only detected collisions via that constructor throwing). "
+                + "Assigns a verified-free ID to each enchantment instead.");
 
         if (configuration.hasChanged()) {
             configuration.save();
