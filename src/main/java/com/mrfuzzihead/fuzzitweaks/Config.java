@@ -82,7 +82,7 @@ public class Config {
      * while a player is within {@link #lookGoalPlayerRange} blocks. Nobody can see a mob's head movement
      * from further away, so this is a free saving for chunk loaded areas and mob-heavy bases.
      */
-    public static boolean onlyRunLookGoalsNearPlayers = false;
+    public static boolean onlyRunLookGoalsNearPlayers = true;
 
     /** Distance in blocks within which a player keeps the visual look goals running. */
     public static int lookGoalPlayerRange = 128;
