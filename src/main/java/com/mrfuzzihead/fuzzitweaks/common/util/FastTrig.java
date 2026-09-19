@@ -1,9 +1,9 @@
 package com.mrfuzzihead.fuzzitweaks.common.util;
 
 /**
- * Table based {@code atan2} approximation. Used to replace the two
- * {@link Math#atan2(double, double)} calls in {@code EntityLookHelper.onUpdateLook()}, which runs for
- * every living entity on every server tick.
+ * Table based {@code atan2} approximation, used to replace the hot {@link Math#atan2(double, double)}
+ * calls in mob AI: head tracking ({@code EntityLookHelper.onUpdateLook}), entity facing
+ * ({@code EntityLiving.faceEntity}) and squid swimming ({@code EntitySquid.onLivingUpdate}).
  *
  * <p>
  * Ported from AI Improvements (MIT) by BuiltBrokenModding (DarkCow), which took the algorithm from

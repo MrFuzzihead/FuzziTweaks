@@ -58,11 +58,12 @@ public class Config {
     public static boolean enableArtificeEnchantIdFix = true;
 
     /**
-     * Replaces vanilla's look math (two {@code Math.atan2} calls per living entity per server tick) with
+     * Replaces the hot {@code Math.atan2} calls in mob AI (head tracking via {@code EntityLookHelper},
+     * {@code EntityLiving.faceEntity}, squid swimming) with
      * {@link com.mrfuzzihead.fuzzitweaks.common.util.FastTrig}. Ported from AI Improvements'
-     * {@code ReplaceLookHelper} option.
+     * {@code ReplaceLookHelper} option, widened to the other hot call sites.
      */
-    public static boolean enableLookHelperMathFix = true;
+    public static boolean enableFastTrig = true;
 
     /**
      * Removes the {@code EntityAIWatchClosest} goal (mobs tracking the closest player) from every mob.
@@ -75,6 +76,16 @@ public class Config {
      * Ported from AI Improvements' {@code RemoveEntityAILookIdle} option.
      */
     public static boolean removeLookIdleGoal = false;
+
+    /**
+     * Only runs the purely visual look goals ({@code EntityAIWatchClosest} and {@code EntityAILookIdle})
+     * while a player is within {@link #lookGoalPlayerRange} blocks. Nobody can see a mob's head movement
+     * from further away, so this is a free saving for chunk loaded areas and mob-heavy bases.
+     */
+    public static boolean onlyRunLookGoalsNearPlayers = false;
+
+    /** Distance in blocks within which a player keeps the visual look goals running. */
+    public static int lookGoalPlayerRange = 128;
 
     /**
      * Fixes the vanilla 1.7.10 melee attack rate bug, where in-range mobs attack every tick instead of
@@ -185,13 +196,14 @@ public class Config {
                 + "(its registration loop only detected collisions via that constructor throwing). "
                 + "Assigns a verified-free ID to each enchantment instead.");
 
-        enableLookHelperMathFix = configuration.getBoolean(
-            "EnableLookHelperMathFix",
+        enableFastTrig = configuration.getBoolean(
+            "EnableFastTrig",
             CATEGORY_AI,
             true,
-            "Replace the look math of every living entity (two Math.atan2 calls per entity per server tick) "
-                + "with a table based approximation. Visually identical, noticeably cheaper on busy servers. "
-                + "Ported from AI Improvements' ReplaceLookHelper option.");
+            "Replace the hot Math.atan2 calls in mob AI (head tracking in EntityLookHelper, EntityLiving"
+                + ".faceEntity, and squid swimming) with a lookup table approximation. The result differs by "
+                + "less than a degree, which is invisible for head and body rotation, and it is cheaper with "
+                + "many entities. Ported from AI Improvements' ReplaceLookHelper option.");
 
         removeLookAtPlayerGoal = configuration.getBoolean(
             "RemoveLookAtPlayerGoal",
@@ -208,6 +220,28 @@ public class Config {
             "Remove the EntityAILookIdle goal (mobs looking at random nearby spots) from every mob. Visual "
                 + "only, but it also disables idle head movement. Ported from AI Improvements' "
                 + "RemoveEntityAILookIdle option.");
+
+        onlyRunLookGoalsNearPlayers = configuration.getBoolean(
+            "OnlyRunLookGoalsNearPlayers",
+            CATEGORY_AI,
+            false,
+            "Only run the purely visual look goals (EntityAIWatchClosest and EntityAILookIdle - mobs "
+                + "turning their head towards the closest player, or towards random nearby spots) while a "
+                + "player is within LookGoalPlayerRange blocks. Further away nothing can be observed, so the "
+                + "goals are skipped entirely, which saves AI work in chunk loaded areas, spawn chunks and "
+                + "large bases. Unlike RemoveLookAtPlayerGoal/RemoveLookIdleGoal this keeps head tracking "
+                + "normal for every mob a player can actually see.");
+
+        lookGoalPlayerRange = configuration.getInt(
+            "LookGoalPlayerRange",
+            CATEGORY_AI,
+            128,
+            1,
+            512,
+            "Distance in blocks within which a player keeps the visual look goals running when "
+                + "OnlyRunLookGoalsNearPlayers is true. The default of 128 is far beyond the range at which "
+                + "head movement can be noticed, so leaving it alone is safe; lower values save more CPU but "
+                + "make distant mobs ignore players.");
 
         enableMeleeAttackRateFix = configuration.getBoolean(
             "EnableMeleeAttackRateFix",
