@@ -16,6 +16,14 @@ public enum Mixins implements IMixins {
         .addExcludedMod(TargetMods.HODGEPODGE)
         .setApplyIf(() -> Config.enableDespawnModule)),
 
+    AI_LOOK_MATH(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("EntityLookHelperMixin")
+        .setApplyIf(() -> Config.enableLookHelperMathFix)),
+
+    AI_MELEE_ATTACK_RATE(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("EntityAIAttackOnCollideMixin")
+        .setApplyIf(() -> Config.enableMeleeAttackRateFix)),
+
     SCREENSHOT(new MixinBuilder().setPhase(Phase.EARLY)
         .addClientMixins("MinecraftMixin")
         .setApplyIf(() -> Config.enableBackgroundScreenshot)),

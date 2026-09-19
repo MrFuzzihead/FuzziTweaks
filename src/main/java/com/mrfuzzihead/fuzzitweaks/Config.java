@@ -30,6 +30,9 @@ public class Config {
     /** Category used for Artifice tweaks settings. */
     public static final String CATEGORY_ARTIFICE = "artifice";
 
+    /** Category used for AI tweaks settings (ported from the AI Improvements mod). */
+    public static final String CATEGORY_AI = "ai";
+
     public static boolean enableDespawnModule = true;
 
     public static boolean enableBackgroundScreenshot = true;
@@ -53,6 +56,34 @@ public class Config {
     public static boolean enableDistantHorizonsDimensionFilter = true;
 
     public static boolean enableArtificeEnchantIdFix = true;
+
+    /**
+     * Replaces vanilla's look math (two {@code Math.atan2} calls per living entity per server tick) with
+     * {@link com.mrfuzzihead.fuzzitweaks.common.util.FastTrig}. Ported from AI Improvements'
+     * {@code ReplaceLookHelper} option.
+     */
+    public static boolean enableLookHelperMathFix = true;
+
+    /**
+     * Removes the {@code EntityAIWatchClosest} goal (mobs tracking the closest player) from every mob.
+     * Ported from AI Improvements' {@code RemoveEntityAIWatchClosest} option.
+     */
+    public static boolean removeLookAtPlayerGoal = false;
+
+    /**
+     * Removes the {@code EntityAILookIdle} goal (mobs looking at random nearby spots) from every mob.
+     * Ported from AI Improvements' {@code RemoveEntityAILookIdle} option.
+     */
+    public static boolean removeLookIdleGoal = false;
+
+    /**
+     * Fixes the vanilla 1.7.10 melee attack rate bug, where in-range mobs attack every tick instead of
+     * once per second. Ported from AI Improvements' attack-on-collide override.
+     */
+    public static boolean enableMeleeAttackRateFix = true;
+
+    /** Ticks a melee mob has to wait between two attacks. Vanilla 1.8+ uses 20. */
+    public static int meleeAttackCooldownTicks = 20;
 
     public static int[] distantHorizonsDimensionIds = new int[] { 0 };
 
@@ -153,6 +184,48 @@ public class Config {
                 + "when an ID conflict detector replaces the vanilla Enchantment constructor "
                 + "(its registration loop only detected collisions via that constructor throwing). "
                 + "Assigns a verified-free ID to each enchantment instead.");
+
+        enableLookHelperMathFix = configuration.getBoolean(
+            "EnableLookHelperMathFix",
+            CATEGORY_AI,
+            true,
+            "Replace the look math of every living entity (two Math.atan2 calls per entity per server tick) "
+                + "with a table based approximation. Visually identical, noticeably cheaper on busy servers. "
+                + "Ported from AI Improvements' ReplaceLookHelper option.");
+
+        removeLookAtPlayerGoal = configuration.getBoolean(
+            "RemoveLookAtPlayerGoal",
+            CATEGORY_AI,
+            false,
+            "Remove the EntityAIWatchClosest goal (mobs turning their head towards the closest player) from "
+                + "every mob, including modded subclasses such as EntityAIWatchClosest2. Visual only, but it "
+                + "also disables head tracking. Ported from AI Improvements' RemoveEntityAIWatchClosest option.");
+
+        removeLookIdleGoal = configuration.getBoolean(
+            "RemoveLookIdleGoal",
+            CATEGORY_AI,
+            false,
+            "Remove the EntityAILookIdle goal (mobs looking at random nearby spots) from every mob. Visual "
+                + "only, but it also disables idle head movement. Ported from AI Improvements' "
+                + "RemoveEntityAILookIdle option.");
+
+        enableMeleeAttackRateFix = configuration.getBoolean(
+            "EnableMeleeAttackRateFix",
+            CATEGORY_AI,
+            true,
+            "Fixes a vanilla 1.7.10 bug in EntityAIAttackOnCollide: in range, mobs swing and attack every "
+                + "tick instead of once per second, which roughly doubles melee damage output. Fixing it "
+                + "matches the behaviour of Minecraft 1.8 and later. Ported from AI Improvements' "
+                + "AttackOnCollide override.");
+
+        meleeAttackCooldownTicks = configuration.getInt(
+            "MeleeAttackCooldownTicks",
+            CATEGORY_AI,
+            20,
+            1,
+            1200,
+            "Ticks a melee mob waits between two attacks when EnableMeleeAttackRateFix is on "
+                + "(20 = 1 second, the 1.8+ vanilla value).");
 
         if (configuration.hasChanged()) {
             configuration.save();

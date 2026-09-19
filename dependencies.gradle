@@ -45,4 +45,8 @@ dependencies {
     compileOnly("com.github.GTNewHorizons:Galacticraft:3.4.33-GTNH:dev")
     compileOnly("it.unimi.dsi:fastutil:8.5.16")
     compileOnly(project.files("libs/distanthorizons-alpha20-dev.jar"))
+
+    // Plain-JVM unit tests (FastTrig and friends) - no Minecraft classes involved.
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
