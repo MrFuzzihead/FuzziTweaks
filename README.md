@@ -32,6 +32,28 @@ Everything lives in the `ai` section of `config/fuzzitweaks.cfg`:
 deal roughly half the melee damage they do in unpatched 1.7.10 (the bugged behavior lets them hit about
 twice as often as intended). Set `EnableMeleeAttackRateFix=false` to keep the old, buggy rate.
 
+### Hats
+
+Hats downloads its hat models from a hardcoded URL (`http://www.creeperrepo.net/ichun/static/hats.xml`). That
+domain has expired - it now parks and answers with a JavaScript redirect page - so the manifest parse throws
+inside the mod's download thread, the exception is swallowed, and the game starts with zero hats: no player
+hats, no mobs wearing hats, empty selection GUI. Everything lives in the `hats` section of
+`config/fuzzitweaks.cfg`:
+
+| Option                     | Default                    | What it does                                                                                                                                                                                                                                                                                                                          |
+|----------------------------|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableHatsEndpointFix`    | `true`                     | Redirects the Hats manifest and hat-file downloads to `HatDownloadBaseUrl`.                                                                                                                                                                                                                                                           |
+| `HatDownloadBaseUrl`       | `http://dist.creeper.host` | `scheme://host` used instead of the defunct repository hosts (creeperrepo.net, redstone.tech, ...). Only the host is swapped and the path is kept, so the manifest and every hat file land on the same layout on the new host. Point it at your own mirror to stop depending on third parties; leave it blank to disable the rewrite. |
+| `PreferLocalHatMobSupport` | `true`                     | Reads the modded-mob hat placement list from `hats/HatModMobSupport.json` when that file exists, instead of a raw GitHub URL that now returns 404. A copy ships inside the Hats jar at `assets/hats/mod/HatModMobSupport.json`.                                                                                                       |
+
+The download walks all ~400 manifest entries one at a time, which takes several minutes on a normal
+connection; files already on disk are skipped, so relaunching resumes where it stopped. A hat that fails to
+transfer is now skipped with a one-line message and retried on the next launch, instead of aborting every
+remaining entry in the manifest the way the unpatched mod does.
+
+The hats themselves are third-party content served by whoever runs the mirror. A pack that has to build
+offline should ship the downloaded `hats/` folder in the pack rather than rely on the download at runtime.
+
 ### Issues
 
 Please open issues [here](https://github.com/MrFuzzihead/FuzziTweaks/issues).

@@ -30,6 +30,9 @@ public class Config {
     /** Category used for Artifice tweaks settings. */
     public static final String CATEGORY_ARTIFICE = "artifice";
 
+    /** Category used for Hats tweaks settings. */
+    public static final String CATEGORY_HATS = "hats";
+
     /** Category used for AI tweaks settings (ported from the AI Improvements mod). */
     public static final String CATEGORY_AI = "ai";
 
@@ -56,6 +59,32 @@ public class Config {
     public static boolean enableDistantHorizonsDimensionFilter = true;
 
     public static boolean enableArtificeEnchantIdFix = true;
+
+    /**
+     * Repoints the Hats mod's hat download at a live mirror. Hats reads its hat manifest from a hardcoded
+     * {@code http://www.creeperrepo.net/ichun/static/hats.xml}; that domain has expired and now returns a
+     * parked JavaScript page, so the manifest parse throws inside the reader thread, the exception is swallowed,
+     * and the game loads with zero hats (no player hats, no mobs wearing hats, empty selection GUI). The same
+     * content is still served by CreeperHost's successor CDN, see {@link #hatsDownloadBaseUrl}.
+     */
+    public static boolean enableHatsEndpointFix = true;
+
+    /**
+     * {@code scheme://host} used for Hats hat downloads. Only URLs that already point at a known Hats
+     * repository host (creeperrepo.net, redstone.tech, dist.creeper.host, filedist.ch) get their host swapped
+     * for this value, the path is kept as-is, so the manifest and every hat file land on the same layout on the
+     * new host. Rewriting the per-file URLs as well is required: the URLs inside the manifest point at
+     * {@code http://cdn.redstone.tech}, which redirects to HTTPS, and {@code HttpURLConnection} does not follow
+     * protocol-changing redirects. Set this to your own mirror, or leave it blank to disable the rewrite.
+     */
+    public static String hatsDownloadBaseUrl = "http://dist.creeper.host";
+
+    /**
+     * Reads the modded-mob hat placement list ({@code HatModMobSupport.json}) from the local {@code hats/}
+     * folder when that file exists. Hats otherwise fetches it from a raw GitHub path that now returns 404, which
+     * leaves modded mobs without hat placement data. Turning this off keeps the original online lookup.
+     */
+    public static boolean preferLocalHatMobSupport = true;
 
     /**
      * Replaces the hot {@code Math.atan2} calls in mob AI (head tracking via {@code EntityLookHelper},
@@ -195,6 +224,39 @@ public class Config {
                 + "when an ID conflict detector replaces the vanilla Enchantment constructor "
                 + "(its registration loop only detected collisions via that constructor throwing). "
                 + "Assigns a verified-free ID to each enchantment instead.");
+
+        enableHatsEndpointFix = configuration.getBoolean(
+            "EnableHatsEndpointFix",
+            CATEGORY_HATS,
+            true,
+            "Repoint the Hats mod's hat download at a live mirror. Hats reads its hat manifest from a hardcoded "
+                + "http://www.creeperrepo.net/ichun/static/hats.xml; that domain has expired and now answers with "
+                + "a parked JavaScript page, so the manifest parse throws inside the reader thread, the exception "
+                + "is swallowed, and the game loads with zero hats (no player hats, no mobs wearing hats, empty "
+                + "selection GUI). The same content is still served by CreeperHost's successor CDN, see "
+                + "HatDownloadBaseUrl.");
+
+        hatsDownloadBaseUrl = configuration.getString(
+            "HatDownloadBaseUrl",
+            CATEGORY_HATS,
+            "http://dist.creeper.host",
+            "scheme://host used for Hats hat downloads. Only URLs that already point at a known Hats repository "
+                + "host (creeperrepo.net, redstone.tech, dist.creeper.host, filedist.ch) get their host swapped for "
+                + "this value and the path is kept as-is, so the manifest and every hat file land on the same "
+                + "layout on the new host. Rewriting the per-file URLs is required too: the URLs inside the "
+                + "manifest point at http://cdn.redstone.tech which redirects to HTTPS, and HttpURLConnection does "
+                + "not follow protocol-changing redirects. Point this at your own mirror to stop depending on "
+                + "third parties, or leave it blank to disable the rewrite.");
+
+        preferLocalHatMobSupport = configuration.getBoolean(
+            "PreferLocalHatMobSupport",
+            CATEGORY_HATS,
+            true,
+            "Read the modded-mob hat placement list (HatModMobSupport.json) from the local hats/ folder when that "
+                + "file exists. Hats otherwise fetches it from a raw GitHub path that now returns 404, which leaves "
+                + "modded mobs without hat placement data. Turning this off keeps the original online lookup. The "
+                + "file ships inside the Hats jar at assets/hats/mod/HatModMobSupport.json, so copying it next to "
+                + "the downloaded hats is enough.");
 
         enableFastTrig = configuration.getBoolean(
             "EnableFastTrig",

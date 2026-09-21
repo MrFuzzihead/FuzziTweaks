@@ -75,7 +75,12 @@ public enum Mixins implements IMixins {
     ARTIFICE(new MixinBuilder().setPhase(Phase.LATE)
         .addCommonMixins("artifice.ArtificeEnchantsMixin")
         .addRequiredMod(TargetMods.ARTIFICE)
-        .setApplyIf(() -> Config.enableArtificeEnchantIdFix));
+        .setApplyIf(() -> Config.enableArtificeEnchantIdFix)),
+
+    HATS(new MixinBuilder().setPhase(Phase.LATE)
+        .addCommonMixins("hats.ThreadHatsReaderMixin", "hats.ThreadGetModMobSupportMixin")
+        .addRequiredMod(TargetMods.HATS)
+        .setApplyIf(() -> Config.enableHatsEndpointFix));
 
     private final MixinBuilder builder;
 
