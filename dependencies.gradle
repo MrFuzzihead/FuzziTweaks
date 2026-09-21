@@ -39,6 +39,8 @@ dependencies {
     compileOnly(rfg.deobf("curse.maven:ThaumicAdditions-232564:2417787"))
     compileOnly("com.falsepattern:mcpatcher-mc1.7.10:0.3.0:dev")
     compileOnly(rfg.deobf("curse.maven:Artifice-223174:2248653"))
+    compileOnly(rfg.deobf("curse.maven:Hats-229073:2232170"))
+    // runtimeOnlyNonPublishable("curse.maven:iChunUtil-229060:2338149")
     /*devOnlyNonPublishable("com.github.GTNewHorizons:Galacticraft:3.4.33-GTNH:dev") {
         exclude module: "GT5-Unofficial"
     }*/
