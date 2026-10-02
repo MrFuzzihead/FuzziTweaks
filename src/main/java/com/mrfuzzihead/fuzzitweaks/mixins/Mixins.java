@@ -28,6 +28,10 @@ public enum Mixins implements IMixins {
         .addCommonMixins("EntityAIAttackOnCollideMixin")
         .setApplyIf(() -> Config.enableMeleeAttackRateFix)),
 
+    LEASH_LOAD_FIX(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("EntityLivingLeashMixin", "EntityLeashKnotMixin")
+        .setApplyIf(() -> Config.enableLeashLoadFix)),
+
     SCREENSHOT(new MixinBuilder().setPhase(Phase.EARLY)
         .addClientMixins("MinecraftMixin")
         .setApplyIf(() -> Config.enableBackgroundScreenshot)),
@@ -38,7 +42,7 @@ public enum Mixins implements IMixins {
         .setApplyIf(() -> Config.enableProjectETweaks)),
 
     THAUMICADDITIONS(new MixinBuilder().setPhase(Phase.LATE)
-        .addClientMixins("thaumicadditions.KeyBindingsMixin")
+        .addClientMixins("thaumicadditions.KeyBindingsMixin", "thaumicadditions.HUDMixin")
         .addRequiredMod(TargetMods.THAUMICADDITIONS)
         .setApplyIf(() -> Config.enableThaumicAdditionsTweaks)),
 

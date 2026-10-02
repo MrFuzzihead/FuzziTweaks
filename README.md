@@ -32,6 +32,28 @@ Everything lives in the `ai` section of `config/fuzzitweaks.cfg`:
 deal roughly half the melee damage they do in unpatched 1.7.10 (the bugged behavior lets them hit about
 twice as often as intended). Set `EnableMeleeAttackRateFix=false` to keep the old, buggy rate.
 
+### Leads
+
+Leads tied from a horse or other mob to a fence post would regularly snap off (dropping a lead item on the
+ground) as soon as the chunk holding them was loaded, because the mob happened to be ticked before the world
+could hand it its anchor. Vanilla 1.7.10 has no way to tell that apart from the fence really being gone:
+`EntityLiving` stashes the saved `Leash` compound in `field_110170_bx` on load, throws that stash away on the
+mob's very first `updateLeashedState()`, and calls `clearLeashed(true, true)` - which drops a lead - the moment
+`leashedToEntity` is null or dead. The lead knot itself is never saved to chunk NBT, so the only copy of it is
+the one rebuilt from the mob, and the `EntityHanging#onUpdate` revalidation of that knot reads the block with a
+plain `getBlock()`, which reports air while the fence's own chunk is not resident and kills the knot. Every
+automatic break funnels through `clearLeashed`, so that is where the fix goes. Everything lives in the `leash`
+section of `config/fuzzitweaks.cfg`:
+
+| Option                  | Default | What it does                                                                                                                                                                                                                                                                                              |
+|-------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableLeashLoadFix`    | `true`  | Remembers a restored mob's anchor past the single tick vanilla gives it, retries the anchor lookup every tick, and holds `clearLeashed` off while a lost anchor is still being chased. Also stops a lead knot from killing itself while the chunk holding its fence post is not loaded, and writes the remembered anchor back to the mob's NBT so the unrecoverable `Leashed:true`-with-no-`Leash` state never reaches disk. |
+| `LeashLoadGraceTicks`   | `200`   | How long (in ticks) a restored mob keeps its lead while its anchor cannot be resolved. A mob whose fence post is there is re-attached on the first tick and is unaffected; this only bounds how long a mob whose fence really is gone keeps an unresolvable lead before the lead drops as normal. 0 restores vanilla's single-tick behaviour. |
+
+Only a mob whose anchor is *gone or dead* is ever deferred, so a player taking a lead off by hand and a mob
+that simply wandered more than 10 blocks out of range both keep vanilla's behaviour and this cannot be used to
+farm lead items.
+
 ### Hats
 
 Hats downloads its hat models from a hardcoded URL (`http://www.creeperrepo.net/ichun/static/hats.xml`). That
