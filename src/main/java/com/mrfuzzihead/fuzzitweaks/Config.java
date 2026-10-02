@@ -36,6 +36,9 @@ public class Config {
     /** Category used for AI tweaks settings (ported from the AI Improvements mod). */
     public static final String CATEGORY_AI = "ai";
 
+    /** Category used for mob lead (leash) settings. */
+    public static final String CATEGORY_LEASH = "leash";
+
     public static boolean enableDespawnModule = true;
 
     public static boolean enableBackgroundScreenshot = true;
@@ -47,6 +50,8 @@ public class Config {
     public static boolean enableProjectETweaks = true;
 
     public static boolean enableThaumicAdditionsTweaks = true;
+
+    public static boolean disableThaumicAdditionsEatingGraphic = true;
 
     public static boolean enableNEITweaks = true;
 
@@ -125,6 +130,23 @@ public class Config {
     /** Ticks a melee mob has to wait between two attacks. Vanilla 1.8+ uses 20. */
     public static int meleeAttackCooldownTicks = 20;
 
+    /**
+     * Keeps a mob from losing its lead to a fence post while its chunk is still being loaded. Vanilla 1.7.10
+     * resolves a saved lead on the mob's first tick and drops it (as an item) if no anchor came out of that
+     * single tick, which is exactly what happens when a mob is ticked before the chunk holding the fence post
+     * is resident. With this on, the anchor is looked up again for {@link #leashLoadGraceTicks} ticks and the
+     * lead is only broken once that window closes, so a mob that only lost the race keeps its lead.
+     */
+    public static boolean enableLeashLoadFix = true;
+
+    /**
+     * Ticks a mob restored from NBT keeps its lead for without a resolvable anchor. A mob whose fence post is
+     * there is re-attached on the first tick and is unaffected; this only bounds how long a mob whose fence
+     * really is gone keeps an unresolvable lead before the lead is dropped as normal. 0 restores vanilla's
+     * single-tick behaviour.
+     */
+    public static int leashLoadGraceTicks = 200;
+
     public static int[] distantHorizonsDimensionIds = new int[] { 0 };
 
     /**
@@ -173,6 +195,12 @@ public class Config {
             CATEGORY_THAUMIC_ADDITIONS,
             true,
             "Enable fixes and tweaks for Thaumic Additions");
+
+        disableThaumicAdditionsEatingGraphic = configuration.getBoolean(
+            "DisableThaumicAdditionsEatingGraphic",
+            CATEGORY_THAUMIC_ADDITIONS,
+            true,
+            "Removes the green/red gradient graphic when eating");
 
         enableNEITweaks = configuration
             .getBoolean("EnableNEITweaks", CATEGORY_NEI, true, "Enable fixes and tweaks for Not Enough Items");
@@ -322,6 +350,30 @@ public class Config {
             1200,
             "Ticks a melee mob waits between two attacks when EnableMeleeAttackRateFix is on "
                 + "(20 = 1 second, the 1.8+ vanilla value).");
+
+        enableLeashLoadFix = configuration.getBoolean(
+            "EnableLeashLoadFix",
+            CATEGORY_LEASH,
+            true,
+            "Keep a mob from losing its lead to a fence post while its chunk is still being loaded. Vanilla "
+                + "1.7.10 resolves a saved lead on the mob's first tick after the chunk is read and drops the lead "
+                + "(spawning a lead item) when no anchor came out of that single tick, so a mob that is ticked "
+                + "before the chunk holding the fence post is resident silently loses its lead. With this on the "
+                + "anchor is looked up again for LeashLoadGraceTicks ticks and the lead is only broken once that "
+                + "window closes, and a lead knot is not killed while the chunk holding its fence post is not "
+                + "loaded. Mobs whose fence post is really gone behave exactly like vanilla.");
+
+        leashLoadGraceTicks = configuration.getInt(
+            "LeashLoadGraceTicks",
+            CATEGORY_LEASH,
+            200,
+            0,
+            1200,
+            "Ticks a mob restored from NBT keeps its lead for while its anchor cannot be resolved when "
+                + "EnableLeashLoadFix is on. A mob whose fence post is there is re-attached on the first tick and "
+                + "is unaffected by this; it only bounds how long a mob whose fence really is gone keeps an "
+                + "unresolvable lead before the lead is dropped as normal. 0 restores vanilla's single-tick "
+                + "behaviour. 200 is 10 seconds, far more than a chunk load needs.");
 
         if (configuration.hasChanged()) {
             configuration.save();
