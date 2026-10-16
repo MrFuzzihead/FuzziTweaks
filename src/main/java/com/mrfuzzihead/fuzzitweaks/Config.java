@@ -39,6 +39,15 @@ public class Config {
     /** Category used for mob lead (leash) settings. */
     public static final String CATEGORY_LEASH = "leash";
 
+    /** Category used for squid spawn control (ported from Squidless). */
+    public static final String CATEGORY_SQUID = "squid";
+
+    /** Category used for the Forge dormant-chunk cache fix (ported from TileEntity Reset Fix). */
+    public static final String CATEGORY_TILEENTITY_RESET = "tileentityreset";
+
+    /** Category used for the defensive tile-entity cast fix (ported from Careful Cast Corrector). */
+    public static final String CATEGORY_CAREFUL_CAST = "carefulcast";
+
     public static boolean enableDespawnModule = true;
 
     public static boolean enableBackgroundScreenshot = true;
@@ -120,6 +129,34 @@ public class Config {
 
     /** Distance in blocks within which a player keeps the visual look goals running. */
     public static int lookGoalPlayerRange = 128;
+
+    /**
+     * Prevents squids from spawning further than {@link #squidSpawnPlayerRange} blocks from every player.
+     * Ported from the Squidless mod.
+     */
+    public static boolean enableSquidSpawnControl = true;
+
+    /** Distance in blocks a player must be within for squids to spawn. Squidless used 64. */
+    public static int squidSpawnPlayerRange = 64;
+
+    /**
+     * Maximum size of a squid spawn pack. {@code 0} keeps vanilla (4); {@code 2} is what Squidless intended but
+     * never achieved, because it set {@code maxPackSize} without calling {@code setResult(ALLOW)} and Forge then
+     * discarded the value. Gates its own mixin.
+     */
+    public static int squidMaxPackSize = 2;
+
+    /**
+     * Invalidates a Forge dormant chunk as soon as it is served. Ported from TileEntity Reset Fix; only has an
+     * effect when {@code forgeChunkLoading.cfg} sets {@code dormantChunkCacheSize} above 0.
+     */
+    public static boolean enableTileEntityResetFix = true;
+
+    /**
+     * Skips the vanilla chest/dungeon tile entity code instead of throwing a {@code ClassCastException} when
+     * another mod has replaced the tile entity at that position. Ported from Careful Cast Corrector.
+     */
+    public static boolean enableCarefulCastCorrector = true;
 
     /**
      * Fixes the vanilla 1.7.10 melee attack rate bug, where in-range mobs attack every tick instead of
@@ -374,6 +411,47 @@ public class Config {
                 + "is unaffected by this; it only bounds how long a mob whose fence really is gone keeps an "
                 + "unresolvable lead before the lead is dropped as normal. 0 restores vanilla's single-tick "
                 + "behaviour. 200 is 10 seconds, far more than a chunk load needs.");
+
+        enableSquidSpawnControl = configuration.getBoolean(
+            "EnableSquidSpawnControl",
+            CATEGORY_SQUID,
+            true,
+            "Prevent squids from spawning further than SquidSpawnPlayerRange blocks from every player. "
+                + "Ported from the Squidless mod.");
+
+        squidSpawnPlayerRange = configuration.getInt(
+            "SquidSpawnPlayerRange",
+            CATEGORY_SQUID,
+            64,
+            1,
+            256,
+            "Distance in blocks a player must be within for squids to spawn. Squidless used 64.");
+
+        squidMaxPackSize = configuration.getInt(
+            "SquidMaxPackSize",
+            CATEGORY_SQUID,
+            2,
+            0,
+            64,
+            "Maximum size of a squid spawn pack. 0 keeps vanilla (4). The default of 2 is what Squidless "
+                + "intended but never achieved: it set maxPackSize without calling setResult(ALLOW), so Forge "
+                + "discarded the value and vanilla's 4 was always used. This port returns the value "
+                + "directly, so 2 now actually takes effect. Set to 0 to keep vanilla pack sizes.");
+
+        enableTileEntityResetFix = configuration.getBoolean(
+            "EnableTileEntityResetFix",
+            CATEGORY_TILEENTITY_RESET,
+            true,
+            "Invalidate a Forge dormant chunk as soon as it is served, so an already unloaded chunk object "
+                + "cannot be reused and reset tile entity data. Only has an effect when forgeChunkLoading.cfg "
+                + "sets dormantChunkCacheSize above 0.");
+
+        enableCarefulCastCorrector = configuration.getBoolean(
+            "EnableCarefulCastCorrector",
+            CATEGORY_CAREFUL_CAST,
+            true,
+            "Skip the vanilla chest/dungeon tile entity code instead of throwing a ClassCastException when "
+                + "another mod has replaced the tile entity at that position. Ported from Careful Cast Corrector.");
 
         if (configuration.hasChanged()) {
             configuration.save();

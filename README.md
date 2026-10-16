@@ -76,6 +76,56 @@ remaining entry in the manifest the way the unpatched mod does.
 The hats themselves are third-party content served by whoever runs the mirror. A pack that has to build
 offline should ship the downloaded `hats/` folder in the pack rather than rely on the download at runtime.
 
+### Squid spawns
+
+The [Squidless](https://github.com/hilburn/Squidless) mod is folded into FuzziTweaks. It stops squids from
+spawning in the band around a player that vanilla still allows (anything past 64 blocks), which is where most
+squids used to appear, and can cap how many squids spawn together. Everything lives in the `squid` section of
+`config/fuzzitweaks.cfg`:
+
+| Option                    | Default | What it does                                                                                                                                                                                                                                                                                                                                                     |
+|---------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableSquidSpawnControl` | `true`  | Denies a squid spawn when no player is within `SquidSpawnPlayerRange` blocks. Only the exact `EntitySquid` class is affected, so modded water mobs and squid subclasses are untouched.                                                                                                                                                                              |
+| `SquidSpawnPlayerRange`   | `64`    | Distance in blocks a player must be within for squids to spawn (Squidless used 64).                                                                                                                                                                                                                                                                               |
+| `SquidMaxPackSize`        | `2`     | Maximum squid pack size. `0` keeps vanilla (4). Squidless set `LivingPackSizeEvent.maxPackSize = 2` but never called `setResult(ALLOW)`, so Forge discarded the value and vanilla's 4 was always used - this port returns the value directly, so 2 now takes effect for the first time. Set it to `0` if you prefer vanilla pack sizes.                       |
+
+Squidless shipped no license file (its upstream repository has none either), so this is a clean-room
+reimplementation from its observed/decompiled behaviour rather than a copy of its code.
+
+### Dormant chunk cache
+
+The [TileEntity Reset Fix](https://github.com/MysteriumTeam/TileEntityResetFix) mod is folded into FuzziTweaks.
+When Forge's dormant chunk cache is enabled, `ChunkProviderServer` parks an unloaded chunk in it and may serve
+that same chunk object again later. By then the object has already been through `Chunk.onChunkUnload`, which
+detaches its tile entities, so reusing it can resurrect stale tile entity data instead of the fresh copy saved
+to disk. The fix invalidates each entry as soon as it has been handed back out. It lives in the
+`tileentityreset` section of `config/fuzzitweaks.cfg`:
+
+| Option                     | Default | What it does                                                                                                                                                                              |
+|----------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableTileEntityResetFix` | `true`  | Drops a dormant chunk from Forge's cache immediately after it is served. Only has an effect when `config/forgeChunkLoading.cfg` sets `dormantChunkCacheSize` above `0`; with the default `0` the cache evicts instantly and this is a no-op. |
+
+TileEntityResetFix ships no license file, so this is likewise a clean-room reimplementation of its observed
+behaviour.
+
+### Careful casts
+
+The [Careful Cast Corrector](https://github.com/Chocohead/Careful-Cast-Corrector) mod is folded into FuzziTweaks.
+Vanilla casts the result of `World.getTileEntity` straight to `TileEntityChest` in
+`BlockChest.onNeighborBlockChange` and to `TileEntityChest` / `TileEntityMobSpawner` in
+`WorldGenDungeons.generate`. A mod that puts its own tile entity at one of those positions makes the cast throw
+`ClassCastException`. Instead of rewriting the casts, the lookups are redirected to return `null` for a foreign
+tile entity, so the existing null checks simply skip the affected step - the same effective behaviour as CCC
+with no extension handler registered. It lives in the `carefulcast` section of `config/fuzzitweaks.cfg`:
+
+| Option                       | Default | What it does                                                                                                                              |
+|------------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableCarefulCastCorrector` | `true`  | Skips the vanilla chest/dungeon tile entity step instead of throwing when another mod has replaced the tile entity. Chests and dungeons behave normally otherwise. |
+
+CCC's extension API (`CarefullyCastChestContentFillers` / `CarefullyCastMobSpawnerSetters`) is intentionally not
+ported; nothing in the pack registers a handler. Careful Cast Corrector ships no license file, so this is a
+clean-room reimplementation of its observed behaviour.
+
 ### Issues
 
 Please open issues [here](https://github.com/MrFuzzihead/FuzziTweaks/issues).
