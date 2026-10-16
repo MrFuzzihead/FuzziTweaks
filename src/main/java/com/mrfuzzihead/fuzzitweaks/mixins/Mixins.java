@@ -84,7 +84,23 @@ public enum Mixins implements IMixins {
     HATS(new MixinBuilder().setPhase(Phase.LATE)
         .addCommonMixins("hats.ThreadHatsReaderMixin", "hats.ThreadGetModMobSupportMixin")
         .addRequiredMod(TargetMods.HATS)
-        .setApplyIf(() -> Config.enableHatsEndpointFix));
+        .setApplyIf(() -> Config.enableHatsEndpointFix)),
+
+    SQUID_SPAWN_CONTROL(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("EntityWaterMobSpawnMixin")
+        .setApplyIf(() -> Config.enableSquidSpawnControl)),
+
+    SQUID_PACK_SIZE(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("EntityLivingSquidPackMixin")
+        .setApplyIf(() -> Config.squidMaxPackSize > 0)),
+
+    TILEENTITY_RESET_FIX(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("forge.ForgeChunkManagerMixin")
+        .setApplyIf(() -> Config.enableTileEntityResetFix)),
+
+    CAREFUL_CAST_CORRECTOR(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("BlockChestMixin", "WorldGenDungeonsMixin")
+        .setApplyIf(() -> Config.enableCarefulCastCorrector));
 
     private final MixinBuilder builder;
 
