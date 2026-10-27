@@ -126,6 +126,23 @@ CCC's extension API (`CarefullyCastChestContentFillers` / `CarefullyCastMobSpawn
 ported; nothing in the pack registers a handler. Careful Cast Corrector ships no license file, so this is a
 clean-room reimplementation of its observed behaviour.
 
+### Railcraft minecart placement
+
+Railcraft replaces vanilla minecart items with its own cart entities from a `PlayerInteractEvent` handler and
+denies the vanilla item use. Another mod can run after Railcraft and reset that result, which lets
+`ItemInWorldManager` place the vanilla cart as well - one click, two carts. FuzziTweaks injects at the return of
+`ForgeEventFactory.onPlayerInteract`, after every event handler has finished, and re-asserts `useItem = DENY` for
+every cart item in Railcraft's `CartUtils.vanillaCartItemMap`. It lives in the `railcraft` section of
+`config/fuzzitweaks.cfg`:
+
+| Option                                | Default | What it does                                                                                                                                                                                                                     |
+|---------------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableRailcraftMinecartPlacementFix` | `true`  | Re-asserts the vanilla-use deny after the whole interaction event has been posted, so a handler that runs after Railcraft cannot undo it. Only the Railcraft cart remains.                                                       |
+| `LogMinecartPlacementDebug`           | `false` | Prints the item, stack size, event result and a stack trace for every minecart interaction. Two traces for one click mean another mod calls `ForgeEventFactory.onPlayerInteract` twice; a single trace with `useItemBefore=DEFAULT` means a handler reset the result (in 1.7.10, `PlayerInteractEvent.setCanceled(false)` resets `useItem`/`useBlock` from `DENY` to `DEFAULT`) or the event was canceled before Railcraft's handler ran. A synthetic event posted directly to the bus does not appear as a trace. |
+
+The mixin is loaded when either option is enabled, so `EnableRailcraftMinecartPlacementFix=false` together with
+`LogMinecartPlacementDebug=true` observes the unmodified behaviour while still collecting the event traces.
+
 ### Issues
 
 Please open issues [here](https://github.com/MrFuzzihead/FuzziTweaks/issues).

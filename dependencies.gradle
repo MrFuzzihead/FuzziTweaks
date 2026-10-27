@@ -45,6 +45,9 @@ dependencies {
         exclude module: "GT5-Unofficial"
     }*/
     compileOnly("com.github.GTNewHorizons:Galacticraft:3.4.33-GTNH:dev")
+    // Railcraft's CartUtils.vanillaCartItemMap is the authoritative list of cart items it replaces. Optional at
+    // runtime - the mixin checks Loader.isModLoaded("Railcraft") before touching RailcraftCartCompat.
+    compileOnly("com.github.GTNewHorizons:Railcraft:9.17.31:dev") { transitive = false }
     compileOnly("it.unimi.dsi:fastutil:8.5.16")
     compileOnly(project.files("libs/distanthorizons-alpha20-dev.jar"))
 

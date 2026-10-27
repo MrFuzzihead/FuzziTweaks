@@ -48,6 +48,9 @@ public class Config {
     /** Category used for the defensive tile-entity cast fix (ported from Careful Cast Corrector). */
     public static final String CATEGORY_CAREFUL_CAST = "carefulcast";
 
+    /** Category used for Railcraft compatibility fixes. */
+    public static final String CATEGORY_RAILCRAFT = "railcraft";
+
     public static boolean enableDespawnModule = true;
 
     public static boolean enableBackgroundScreenshot = true;
@@ -157,6 +160,22 @@ public class Config {
      * another mod has replaced the tile entity at that position. Ported from Careful Cast Corrector.
      */
     public static boolean enableCarefulCastCorrector = true;
+
+    /**
+     * Re-asserts {@code useItem = DENY} on a right-click-block {@code PlayerInteractEvent} whenever the held item
+     * is a cart item Railcraft replaces. Railcraft does the same from its own event handler, but another mod can
+     * run after it and reset the result, which lets vanilla place the minecart as well and produces two carts
+     * from one click. Injecting at the return of {@code ForgeEventFactory.onPlayerInteract} runs after every
+     * event handler, so no handler can undo the deny afterwards.
+     */
+    public static boolean enableRailcraftMinecartPlacementFix = true;
+
+    /**
+     * Logs a stack trace for every right-click-block interaction with a minecart item. Intended for diagnosing a
+     * mod that resets the event result or calls {@code ForgeEventFactory.onPlayerInteract} a second time, so it is
+     * off by default. See the README for how to read the output.
+     */
+    public static boolean logMinecartPlacementDebug = false;
 
     /**
      * Fixes the vanilla 1.7.10 melee attack rate bug, where in-range mobs attack every tick instead of
@@ -452,6 +471,26 @@ public class Config {
             true,
             "Skip the vanilla chest/dungeon tile entity code instead of throwing a ClassCastException when "
                 + "another mod has replaced the tile entity at that position. Ported from Careful Cast Corrector.");
+
+        enableRailcraftMinecartPlacementFix = configuration.getBoolean(
+            "EnableRailcraftMinecartPlacementFix",
+            CATEGORY_RAILCRAFT,
+            true,
+            "Re-assert useItem = DENY on right-click-block PlayerInteractEvents for Railcraft-replaced cart "
+                + "items. Railcraft already denies the item use from its own event handler, but another mod can "
+                + "reset the result after it and let vanilla place a second minecart. Running after every event "
+                + "handler cannot be undone and leaves only the Railcraft cart.");
+
+        logMinecartPlacementDebug = configuration.getBoolean(
+            "LogMinecartPlacementDebug",
+            CATEGORY_RAILCRAFT,
+            false,
+            "Print a stack trace for every right-click-block interaction with a minecart item. The trace names "
+                + "the caller of ForgeEventFactory.onPlayerInteract. Two traces for one click mean another mod "
+                + "calls onPlayerInteract a second time; a single trace with useItemBefore=DEFAULT means a handler "
+                + "reset the result, or the event was canceled before Railcraft's handler ran. A synthetic event "
+                + "posted directly to the event bus does not appear as an onPlayerInteract trace. Intended for "
+                + "diagnosis, so it is off by default.");
 
         if (configuration.hasChanged()) {
             configuration.save();

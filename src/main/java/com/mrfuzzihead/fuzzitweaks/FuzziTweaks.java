@@ -1,5 +1,8 @@
 package com.mrfuzzihead.fuzzitweaks;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.mrfuzzihead.fuzzitweaks.common.GalacticraftRecipes;
 
 import cpw.mods.fml.common.Loader;
@@ -19,7 +22,8 @@ public class FuzziTweaks {
 
     public static final String MODID = "fuzzitweaks";
     public static final String MODNAME = "FuzziTweaks";
-    public static final String DEPENDENCIES = "after:ProjectE;after:thaumicadditions;after:NotEnoughItems;after:mcpatcher;after:GalacticraftCore;after:distanthorizons";
+    public static final String DEPENDENCIES = "after:ProjectE;after:thaumicadditions;after:NotEnoughItems;after:mcpatcher;after:GalacticraftCore;after:distanthorizons;after:Railcraft";
+    public static final Logger LOG = LogManager.getLogger(MODID);
 
     @SidedProxy(
         clientSide = "com.mrfuzzihead.fuzzitweaks.ClientProxy",
