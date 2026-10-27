@@ -98,6 +98,14 @@ public enum Mixins implements IMixins {
         .addCommonMixins("forge.ForgeChunkManagerMixin")
         .setApplyIf(() -> Config.enableTileEntityResetFix)),
 
+    // Railcraft is not a coremod, so an early mixin cannot be gated on its mod ID at load time. The mixin
+    // itself no-ops when Loader.isModLoaded("Railcraft") is false, and RailcraftCartCompat keeps the
+    // Railcraft class reference out of the mixin until that check has passed. The mixin also loads in
+    // logging-only mode so the deny can be disabled while the event traces are still collected.
+    RAILCRAFT_MINECART_FIX(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins("forge.MixinForgeEventFactory")
+        .setApplyIf(() -> Config.enableRailcraftMinecartPlacementFix || Config.logMinecartPlacementDebug)),
+
     CAREFUL_CAST_CORRECTOR(new MixinBuilder().setPhase(Phase.EARLY)
         .addCommonMixins("BlockChestMixin", "WorldGenDungeonsMixin")
         .setApplyIf(() -> Config.enableCarefulCastCorrector));
