@@ -61,9 +61,14 @@ public class Config {
 
     public static boolean enableProjectETweaks = true;
 
+    /**
+     * Main switch for all Thaumic Additions mixins. Individual tweaks still have their own switches.
+     */
     public static boolean enableThaumicAdditionsTweaks = true;
 
     public static boolean disableThaumicAdditionsEatingGraphic = true;
+
+    public static boolean disableThaumicAdditionsVersionNotifier = true;
 
     public static boolean enableNEITweaks = true;
 
@@ -271,7 +276,15 @@ public class Config {
             "DisableThaumicAdditionsEatingGraphic",
             CATEGORY_THAUMIC_ADDITIONS,
             true,
-            "Removes the green/red gradient graphic when eating");
+            "Hides the green/red item-use progress bar while eating or using an item. The Adaminite "
+                + "gauge, tip messages and item HUD extras are left alone");
+
+        disableThaumicAdditionsVersionNotifier = configuration.getBoolean(
+            "DisableThaumicAdditionsVersionNotifier",
+            CATEGORY_THAUMIC_ADDITIONS,
+            true,
+            "Suppresses Thaumic Additions' login-time version/update chat messages (outdated, what's "
+                + "new, up to date, or no connection)");
 
         enableNEITweaks = configuration
             .getBoolean("EnableNEITweaks", CATEGORY_NEI, true, "Enable fixes and tweaks for Not Enough Items");

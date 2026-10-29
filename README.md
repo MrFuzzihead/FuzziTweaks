@@ -70,6 +70,20 @@ Only a restored mob with a saved fence-post anchor and an unloaded/unresolved fe
 taking a lead off by hand, a player/entity UUID anchor, malformed NBT, and a fence known to have been removed
 all keep vanilla behaviour, so this cannot be used to farm lead items or undo a player breaking a knot.
 
+### Thaumic Additions
+
+Thaumic Additions tweaks share one late mixin gate, so nothing is loaded unless Thaumic Additions is
+present. Everything lives in the `thaumicadditions` section of `config/fuzzitweaks.cfg`:
+
+| Option                                      | Default | What it does                                                                                                                                                                                                                   |
+|---------------------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableThaumicAdditionsTweaks`              | `true`  | Main switch for all Thaumic Additions mixins. When disabled, none of the mixins below are applied; the individual switches still have their own settings. Read at startup, so restart after changing it.                        |
+| `DisableThaumicAdditionsEatingGraphic`      | `true`  | Hides the green/red item-use progress bar while eating or using an item. The Adaminite armor gauge, tip messages and `IHUDRenderable` item extras remain visible.                                                               |
+| `DisableThaumicAdditionsVersionNotifier`    | `true`  | Suppresses Thaumic Additions' login-time version messages (outdated, what's-new, up to date, or no connection). This is unrelated to the HUD; the mod's `KeyBindings.onTick` is the version notifier despite its class name. |
+
+The two individual options are checked inside their mixins, so they can be changed without touching the
+main startup gate.
+
 ### Hats
 
 Hats downloads its hat models from a hardcoded URL (`http://www.creeperrepo.net/ichun/static/hats.xml`). That
