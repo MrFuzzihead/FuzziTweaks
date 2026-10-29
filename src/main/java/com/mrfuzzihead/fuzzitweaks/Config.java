@@ -239,7 +239,7 @@ public class Config {
             0,
             0,
             15,
-            "Highest light level that hostile mobs will spawn at (0-15), using block light");
+            "Maximum block light level at which hostile mobs can spawn (0-15). Modern Minecraft uses 0");
 
         maxMobSkyLightLevel = configuration.getInt(
             "MaxMobSkyLightLevel",
@@ -247,7 +247,8 @@ public class Config {
             7,
             0,
             15,
-            "Highest light level that hostile mobs will spawn at (0-15), using sky light");
+            "Maximum effective sky-adjusted light level for the random hostile-mob spawn check (0-15); "
+                + "7 matches modern Minecraft. Lower values make spawns rarer");
 
         enableBackgroundScreenshot = configuration.getBoolean(
             "EnableBackgroundScreenshot",

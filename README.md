@@ -33,6 +33,21 @@ Everything lives in the `ai` section of `config/fuzzitweaks.cfg`:
 deal roughly half the melee damage they do in unpatched 1.7.10 (the bugged behavior lets them hit about
 twice as often as intended). Set `EnableMeleeAttackRateFix=false` to keep the old, buggy rate.
 
+### Mob spawn light levels
+
+Hostile mobs use modern Java Edition's light rules instead of 1.7.10's block-light-7 check. The raw
+stored sky-light gate and the thunder-time brightness adjustment are preserved from modern Minecraft.
+Everything lives in the `minecraft` section of `config/fuzzitweaks.cfg`:
+
+| Option                   | Default | What it does                                                                                                                                                                                                                   |
+|--------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `MaxMobSpawnLightLevel`  | `0`     | Hard maximum block light level at which hostile mobs can spawn (0-15). `0` matches modern Minecraft in the Overworld.                                                                                                           |
+| `MaxMobSkyLightLevel`    | `7`     | Maximum effective sky-adjusted light level accepted by the random darkness check (0-15). `7` matches modern Minecraft; lower values make spawn attempts rarer. The separate stored sky-light check remains modern's random gate. |
+
+As in modern Minecraft, the final sky-adjusted check is probabilistic: a lower light value passes more
+often than one close to the configured maximum, so `MaxMobSkyLightLevel` is a threshold, not a guarantee
+that every block at or below it will spawn a mob.
+
 ### Leads
 
 Leads tied from a horse or other mob to a fence post would regularly snap off (dropping a lead item on the
