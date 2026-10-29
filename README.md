@@ -63,12 +63,12 @@ section of `config/fuzzitweaks.cfg`:
 
 | Option                  | Default | What it does                                                                                                                                                                                                                                                                                              |
 |-------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `EnableLeashLoadFix`    | `true`  | Remembers a restored mob's anchor past the single tick vanilla gives it, retries the anchor lookup every tick, and holds `clearLeashed` off while a lost anchor is still being chased. Also stops a lead knot from killing itself while the chunk holding its fence post is not loaded, and writes the remembered anchor back to the mob's NBT so the unrecoverable `Leashed:true`-with-no-`Leash` state never reaches disk. |
-| `LeashLoadGraceTicks`   | `200`   | How long (in ticks) a restored mob keeps its lead while its anchor cannot be resolved. A mob whose fence post is there is re-attached on the first tick and is unaffected; this only bounds how long a mob whose fence really is gone keeps an unresolvable lead before the lead drops as normal. 0 restores vanilla's single-tick behaviour. |
+| `EnableLeashLoadFix`    | `true`  | Remembers a restored mob's saved fence-post anchor past the single tick vanilla gives it and holds `clearLeashed` off while the fence's chunk is not loaded. A resident, valid fence is re-attached immediately; a resident chunk whose block is no longer leashable is treated as a real removal and dropped as vanilla does. Only the `X/Y/Z` fence form is tracked: player/entity UUID anchors and malformed or missing `Leash` tags keep vanilla behaviour. Also stops a lead knot from killing itself while the chunk holding its fence post is not loaded, and writes the remembered anchor back to NBT while the decision is still pending. |
+| `LeashLoadGraceTicks`   | `200`   | How long (in ticks) a restored mob may keep its lead while its fence chunk is not loaded or its knot cannot yet be attached. A mob whose fence is resident and valid is re-attached on the first tick and is unaffected; this only bounds the load-order race and drops an unresolvable lead as normal once the window closes. 0 restores vanilla's single-tick behaviour. |
 
-Only a mob whose anchor is *gone or dead* is ever deferred, so a player taking a lead off by hand and a mob
-that simply wandered more than 10 blocks out of range both keep vanilla's behaviour and this cannot be used to
-farm lead items.
+Only a restored mob with a saved fence-post anchor and an unloaded/unresolved fence is ever deferred. A player
+taking a lead off by hand, a player/entity UUID anchor, malformed NBT, and a fence known to have been removed
+all keep vanilla behaviour, so this cannot be used to farm lead items or undo a player breaking a knot.
 
 ### Hats
 

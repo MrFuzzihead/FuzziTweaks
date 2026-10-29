@@ -1,5 +1,6 @@
 package com.mrfuzzihead.fuzzitweaks.mixins.early;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -25,11 +26,12 @@ import com.mrfuzzihead.fuzzitweaks.common.util.LeashLoadGrace;
  * yet" apart from "fence is gone".
  *
  * <p>
- * Both halves of the round trip are covered here: the stash is remembered beyond the one tick vanilla gives
- * it, the anchor is looked up again on every tick of a short grace window, and {@code clearLeashed} - which
- * every automatic break funnels through, including the out-of-range break in {@code EntityCreature} - is held
- * off while that window lasts. The anchor is also written back out on save, so the unrecoverable "flagged as
- * leashed but with no anchor" NBT never reaches disk. See {@link LeashLoadGrace}.
+ * Both halves of the round trip are covered here: a saved fence-post anchor is remembered beyond the one tick
+ * vanilla gives it, retried while its chunk is unavailable, and {@code clearLeashed} is held off during that
+ * load-order window. Once a live anchor exists the pending state is dropped immediately, including at the end
+ * of {@code recreateLeash} and {@code setLeashedToEntity}, so a player removing the knot later keeps vanilla
+ * behaviour. The remembered anchor is written back out on save only while the decision is still pending. See
+ * {@link LeashLoadGrace}.
  */
 @Mixin(EntityLiving.class)
 public abstract class EntityLivingLeashMixin extends EntityLivingBase {
@@ -52,9 +54,19 @@ public abstract class EntityLivingLeashMixin extends EntityLivingBase {
         LeashLoadGrace.tickLeash((EntityLiving) (Object) this);
     }
 
+    @Inject(method = "recreateLeash", at = @At("TAIL"))
+    private void fuzziTweaks$anchorResolved(CallbackInfo ci) {
+        LeashLoadGrace.onAnchorResolved((EntityLiving) (Object) this);
+    }
+
+    @Inject(method = "setLeashedToEntity", at = @At("TAIL"))
+    private void fuzziTweaks$anchorAttached(Entity anchor, boolean sendAttachNotification, CallbackInfo ci) {
+        LeashLoadGrace.onAnchorResolved((EntityLiving) (Object) this);
+    }
+
     @Inject(method = "clearLeashed", at = @At("HEAD"), cancellable = true)
     private void fuzziTweaks$deferAnchorLoss(boolean sendPacket, boolean dropLead, CallbackInfo ci) {
-        if (LeashLoadGrace.deferAnchorLoss((EntityLiving) (Object) this)) {
+        if (LeashLoadGrace.deferAnchorLoss((EntityLiving) (Object) this, dropLead)) {
             ci.cancel();
         }
     }

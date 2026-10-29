@@ -202,16 +202,18 @@ public class Config {
      * Keeps a mob from losing its lead to a fence post while its chunk is still being loaded. Vanilla 1.7.10
      * resolves a saved lead on the mob's first tick and drops it (as an item) if no anchor came out of that
      * single tick, which is exactly what happens when a mob is ticked before the chunk holding the fence post
-     * is resident. With this on, the anchor is looked up again for {@link #leashLoadGraceTicks} ticks and the
-     * lead is only broken once that window closes, so a mob that only lost the race keeps its lead.
+     * is resident. With this on, a saved fence-post anchor is retried for {@link #leashLoadGraceTicks} ticks
+     * while its chunk is unavailable. Once the chunk is resident, a valid fence is re-attached and a removed or
+     * replaced fence drops the lead as vanilla does. Player/entity UUID anchors and malformed or missing
+     * {@code Leash} tags are left to vanilla.
      */
     public static boolean enableLeashLoadFix = true;
 
     /**
-     * Ticks a mob restored from NBT keeps its lead for without a resolvable anchor. A mob whose fence post is
-     * there is re-attached on the first tick and is unaffected; this only bounds how long a mob whose fence
-     * really is gone keeps an unresolvable lead before the lead is dropped as normal. 0 restores vanilla's
-     * single-tick behaviour.
+     * Ticks a restored mob may keep its lead while its fence chunk is not loaded or its knot cannot yet be
+     * attached. A mob whose fence is resident and valid is re-attached on the first tick and is unaffected;
+     * this only bounds the load-order race before an unresolvable lead is dropped as normal. 0 restores
+     * vanilla's single-tick behaviour.
      */
     public static int leashLoadGraceTicks = 200;
 
@@ -443,10 +445,11 @@ public class Config {
             "Keep a mob from losing its lead to a fence post while its chunk is still being loaded. Vanilla "
                 + "1.7.10 resolves a saved lead on the mob's first tick after the chunk is read and drops the lead "
                 + "(spawning a lead item) when no anchor came out of that single tick, so a mob that is ticked "
-                + "before the chunk holding the fence post is resident silently loses its lead. With this on the "
-                + "anchor is looked up again for LeashLoadGraceTicks ticks and the lead is only broken once that "
-                + "window closes, and a lead knot is not killed while the chunk holding its fence post is not "
-                + "loaded. Mobs whose fence post is really gone behave exactly like vanilla.");
+                + "before the chunk holding the fence post is resident silently loses its lead. With this on, a "
+                + "saved fence-post anchor is retried for LeashLoadGraceTicks ticks while its chunk is unavailable. "
+                + "Once the chunk is resident, a valid fence is re-attached and a removed or replaced fence drops "
+                + "the lead as vanilla does. Player/entity UUID anchors and malformed or missing Leash tags are "
+                + "left to vanilla. A lead knot is also not killed while its fence chunk is not loaded.");
 
         leashLoadGraceTicks = configuration.getInt(
             "LeashLoadGraceTicks",
@@ -454,11 +457,11 @@ public class Config {
             200,
             0,
             1200,
-            "Ticks a mob restored from NBT keeps its lead for while its anchor cannot be resolved when "
-                + "EnableLeashLoadFix is on. A mob whose fence post is there is re-attached on the first tick and "
-                + "is unaffected by this; it only bounds how long a mob whose fence really is gone keeps an "
-                + "unresolvable lead before the lead is dropped as normal. 0 restores vanilla's single-tick "
-                + "behaviour. 200 is 10 seconds, far more than a chunk load needs.");
+            "Ticks a mob restored from NBT may keep its lead while its fence chunk is not loaded or its knot "
+                + "cannot yet be attached when EnableLeashLoadFix is on. A mob whose fence is resident and valid "
+                + "is re-attached on the first tick and is unaffected by this; it only bounds the load-order race "
+                + "before an unresolvable lead is dropped as normal. 0 restores vanilla's single-tick behaviour. "
+                + "200 is 10 seconds, far more than a chunk load needs.");
 
         enableSquidSpawnControl = configuration.getBoolean(
             "EnableSquidSpawnControl",
