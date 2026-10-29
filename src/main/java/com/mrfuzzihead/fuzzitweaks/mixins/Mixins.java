@@ -9,7 +9,8 @@ import com.mrfuzzihead.fuzzitweaks.Config;
 public enum Mixins implements IMixins {
 
     MINECRAFT(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityMobMixin", "TileEntityRendererDispatcherMixin")),
+        .addCommonMixins("EntityMobMixin")
+        .addClientMixins("TileEntityRendererDispatcherMixin")),
 
     MINECRAFTEXCLHODGEPODGE(new MixinBuilder().setPhase(Phase.EARLY)
         .addCommonMixins("EntityLivingMixin")
