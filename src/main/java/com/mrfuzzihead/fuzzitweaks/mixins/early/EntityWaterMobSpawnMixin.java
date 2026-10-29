@@ -39,6 +39,10 @@ public abstract class EntityWaterMobSpawnMixin extends EntityCreature {
 
     @Inject(method = "getCanSpawnHere", at = @At("HEAD"), cancellable = true, require = 1)
     private void fuzziTweaks$denySquidSpawnsAwayFromPlayers(CallbackInfoReturnable<Boolean> cir) {
+        if (!Config.enableSquidSpawnControl) {
+            return;
+        }
+
         // Match Squidless exactly: vanilla squids only, not modded water mobs or squid subclasses.
         if (((Object) this).getClass() != EntitySquid.class) {
             return;

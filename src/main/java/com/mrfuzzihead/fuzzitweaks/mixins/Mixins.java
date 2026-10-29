@@ -16,17 +16,17 @@ public enum Mixins implements IMixins {
         .addExcludedMod(TargetMods.HODGEPODGE)
         .setApplyIf(() -> Config.enableDespawnModule)),
 
-    AI_FAST_TRIG(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityLookHelperMixin", "EntityLivingFaceEntityMixin", "EntitySquidMixin")
-        .setApplyIf(() -> Config.enableFastTrig)),
-
-    AI_LOOK_GOAL_PROXIMITY(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityAIWatchClosestMixin", "EntityAILookIdleMixin")
-        .setApplyIf(() -> Config.onlyRunLookGoalsNearPlayers)),
-
-    AI_MELEE_ATTACK_RATE(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityAIAttackOnCollideMixin")
-        .setApplyIf(() -> Config.enableMeleeAttackRateFix)),
+    AI_IMPROVEMENTS(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins(
+            "EntityLookHelperMixin",
+            "EntityLivingFaceEntityMixin",
+            "EntitySquidMixin",
+            "EntityAIWatchClosestMixin",
+            "EntityAILookIdleMixin",
+            "EntityAIAttackOnCollideMixin",
+            "EntityWaterMobSpawnMixin",
+            "EntityLivingSquidPackMixin")
+        .setApplyIf(() -> Config.enableAIImprovementsMain)),
 
     LEASH_LOAD_FIX(new MixinBuilder().setPhase(Phase.EARLY)
         .addCommonMixins("EntityLivingLeashMixin", "EntityLeashKnotMixin")
@@ -81,14 +81,6 @@ public enum Mixins implements IMixins {
         .addCommonMixins("hats.ThreadHatsReaderMixin", "hats.ThreadGetModMobSupportMixin")
         .addRequiredMod(TargetMods.HATS)
         .setApplyIf(() -> Config.enableHatsEndpointFix)),
-
-    SQUID_SPAWN_CONTROL(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityWaterMobSpawnMixin")
-        .setApplyIf(() -> Config.enableSquidSpawnControl)),
-
-    SQUID_PACK_SIZE(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityLivingSquidPackMixin")
-        .setApplyIf(() -> Config.squidMaxPackSize > 0)),
 
     TILEENTITY_RESET_FIX(new MixinBuilder().setPhase(Phase.EARLY)
         .addCommonMixins("forge.ForgeChunkManagerMixin")

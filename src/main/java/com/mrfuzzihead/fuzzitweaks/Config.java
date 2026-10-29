@@ -109,6 +109,12 @@ public class Config {
     public static boolean preferLocalHatMobSupport = true;
 
     /**
+     * Main switch for the AI Improvements mixins, the folded Squidless mixins, and the look-goal stripper.
+     * Individual tweaks still have their own switches.
+     */
+    public static boolean enableAIImprovementsMain = true;
+
+    /**
      * Replaces the hot {@code Math.atan2} calls in mob AI (head tracking via {@code EntityLookHelper},
      * {@code EntityLiving.faceEntity}, squid swimming) with
      * {@link com.mrfuzzihead.fuzzitweaks.common.util.FastTrig}. Ported from AI Improvements'
@@ -140,7 +146,7 @@ public class Config {
 
     /**
      * Prevents squids from spawning further than {@link #squidSpawnPlayerRange} blocks from every player.
-     * Ported from the Squidless mod.
+     * Ported from the Squidless mod; loaded under the shared AI Improvements gate.
      */
     public static boolean enableSquidSpawnControl = true;
 
@@ -150,7 +156,8 @@ public class Config {
     /**
      * Maximum size of a squid spawn pack. {@code 0} keeps vanilla (4); {@code 2} is what Squidless intended but
      * never achieved, because it set {@code maxPackSize} without calling {@code setResult(ALLOW)} and Forge then
-     * discarded the value. Gates its own mixin.
+     * discarded the value. The shared AI Improvements gate loads the squid pack mixin; this value gates its
+     * handler.
      */
     public static int squidMaxPackSize = 2;
 
@@ -354,6 +361,15 @@ public class Config {
                 + "file ships inside the Hats jar at assets/hats/mod/HatModMobSupport.json, so copying it next to "
                 + "the downloaded hats is enough.");
 
+        enableAIImprovementsMain = configuration.getBoolean(
+            "EnableAIImprovementsMain",
+            CATEGORY_AI,
+            true,
+            "Main switch for all AI Improvements tweaks, including the folded Squidless spawn and pack-size "
+                + "mixins. When disabled, none of the AI mixins are applied and the look-goal removal listener is "
+                + "not registered. Individual tweaks still have their own settings below. The mixin gate is read "
+                + "at startup, so changing this requires a game restart.");
+
         enableFastTrig = configuration.getBoolean(
             "EnableFastTrig",
             CATEGORY_AI,
@@ -382,7 +398,7 @@ public class Config {
         onlyRunLookGoalsNearPlayers = configuration.getBoolean(
             "OnlyRunLookGoalsNearPlayers",
             CATEGORY_AI,
-            false,
+            true,
             "Only run the purely visual look goals (EntityAIWatchClosest and EntityAILookIdle - mobs "
                 + "turning their head towards the closest player, or towards random nearby spots) while a "
                 + "player is within LookGoalPlayerRange blocks. Further away nothing can be observed, so the "

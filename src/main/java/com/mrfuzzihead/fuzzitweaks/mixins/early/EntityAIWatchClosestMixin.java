@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.mrfuzzihead.fuzzitweaks.Config;
 import com.mrfuzzihead.fuzzitweaks.common.util.PlayerProximity;
 
 /**
@@ -32,6 +33,9 @@ public abstract class EntityAIWatchClosestMixin {
 
     @Inject(method = "shouldExecute", at = @At("HEAD"), cancellable = true)
     private void fuzziTweaks$requirePlayerInRange(CallbackInfoReturnable<Boolean> cir) {
+        if (!Config.onlyRunLookGoalsNearPlayers) {
+            return;
+        }
         if (!PlayerProximity.isAnyPlayerWithinRange(this.theWatcher)) {
             cir.setReturnValue(false);
         }

@@ -26,7 +26,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
  * behaviour (including modded subclasses, for example {@code EntityAIWatchClosest2}) but resolves the
  * goal matchers once at startup and bails out on the first {@code EntityJoinWorldEvent} (items, XP
  * orbs, projectiles, ...) instead of walking the task list, and it does not register a listener at all
- * when both options are disabled.
+ * when the main AI Improvements switch is disabled or both options are off.
  *
  * <p>
  * Both goals are purely visual - {@code EntityAIWatchClosest} turns the head towards the closest player,
@@ -46,10 +46,14 @@ public final class AIGoalStripper {
     private AIGoalStripper() {}
 
     /**
-     * Resolves the enabled goal matchers and registers the join handler when there is something to strip.
-     * Call once during pre-init, after the config has been synchronized.
+     * Resolves the enabled goal matchers and registers the join handler when the main switch is on and there is
+     * something to strip. Call once during pre-init, after the config has been synchronized.
      */
     public static void register() {
+        if (!Config.enableAIImprovementsMain) {
+            return;
+        }
+
         final List<Class<?>> matchers = new ArrayList<>(2);
         if (Config.removeLookAtPlayerGoal) {
             matchers.add(EntityAIWatchClosest.class);
