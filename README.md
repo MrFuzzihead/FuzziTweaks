@@ -161,15 +161,17 @@ behaviour.
 
 The [Careful Cast Corrector](https://github.com/Chocohead/Careful-Cast-Corrector) mod is folded into FuzziTweaks.
 Vanilla casts the result of `World.getTileEntity` straight to `TileEntityChest` in
-`BlockChest.onNeighborBlockChange` and to `TileEntityChest` / `TileEntityMobSpawner` in
-`WorldGenDungeons.generate`. A mod that puts its own tile entity at one of those positions makes the cast throw
-`ClassCastException`. Instead of rewriting the casts, the lookups are redirected to return `null` for a foreign
-tile entity, so the existing null checks simply skip the affected step - the same effective behaviour as CCC
-with no extension handler registered. It lives in the `carefulcast` section of `config/fuzzitweaks.cfg`:
+`BlockChest.onNeighborBlockChange` and `BlockChest.breakBlock`, and to `TileEntityChest` /
+`TileEntityMobSpawner` in `WorldGenDungeons.generate`. A mod that puts its own tile entity at one of those
+positions makes the cast throw `ClassCastException`. Instead of rewriting the casts, the lookups are
+redirected to return `null` for a foreign tile entity, so the existing null checks simply skip the affected
+step - the same effective behaviour as CCC with no extension handler registered. CCC 2.0 itself only patches
+`onNeighborBlockChange` in `BlockChest`; FuzziTweaks also covers `breakBlock` with the same guard. It lives in
+the `carefulcast` section of `config/fuzzitweaks.cfg`:
 
 | Option                       | Default | What it does                                                                                                                              |
 |------------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| `EnableCarefulCastCorrector` | `true`  | Skips the vanilla chest/dungeon tile entity step instead of throwing when another mod has replaced the tile entity. Chests and dungeons behave normally otherwise. |
+| `EnableCarefulCastCorrector` | `true`  | Skips the vanilla chest/dungeon tile entity step instead of throwing when another mod has replaced the tile entity. Chest neighbour updates, chest breaking, and dungeon chest/spawner setup behave normally otherwise. |
 
 CCC's extension API (`CarefullyCastChestContentFillers` / `CarefullyCastMobSpawnerSetters`) is intentionally not
 ported; nothing in the pack registers a handler. Careful Cast Corrector ships no license file, so this is a
