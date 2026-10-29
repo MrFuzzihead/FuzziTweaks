@@ -100,7 +100,8 @@ public final class ThreadedScreenshot {
         final Thread writer = new Thread(() -> {
             try {
                 shotsDir.mkdirs();
-                final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                // TYPE_INT_RGB drops the framebuffer alpha, matching vanilla's ScreenShotHelper.
+                final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
                 image.setRGB(0, 0, width, height, argb, 0, width);
                 if (!ImageIO.write(image, "png", targetFile)) {
                     throw new IllegalStateException("No PNG writer was available.");
@@ -153,8 +154,9 @@ public final class ThreadedScreenshot {
             GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 4);
         }
 
-        // OpenGL origin is bottom-left; build the scanlines top-down as
-        // TYPE_INT_ARGB pixels so the written image is not upside down.
+        // OpenGL origin is bottom-left; build the scanlines top-down so the
+        // written image is not upside down. The writer uses TYPE_INT_RGB, so
+        // the packed alpha channel is dropped like vanilla's screenshot path.
         final int[] argb = new int[pixelCount];
         for (int y = 0; y < height; y++) {
             final int srcRow = (height - 1 - y) * width;
