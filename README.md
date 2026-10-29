@@ -84,6 +84,25 @@ present. Everything lives in the `thaumicadditions` section of `config/fuzzitwea
 The two individual options are checked inside their mixins, so they can be changed without touching the
 main startup gate.
 
+### Distant Horizons
+
+FuzziTweaks can stop Distant Horizons from generating LOD data in selected dimensions. It only stops future
+generation: LOD data that already exists on disk is left there and keeps rendering. The server-side mixin
+covers dedicated servers and singleplayer, while the client-side mixin stops a client from requesting
+generation from a remote Distant Horizons server. All settings are read at startup, so restart after changing
+them. Everything lives in the `distanthorizons` section of `config/fuzzitweaks.cfg`:
+
+| Option                                   | Default | What it does                                                                                                                                                                                                                                      |
+|------------------------------------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableDistantHorizonsDimensionFilter`   | `true`  | Applies the per-dimension generate/deny list. Disabling it applies neither the server-side nor the client-side mixin.                                                                                                                              |
+| `DimensionIds`                           | empty   | Dimension IDs the list applies to. `0` is the Overworld, `-1` the Nether, `1` the End; modded dimensions use their own IDs. Forge writes the generated list with one ID per line.                                                                   |
+| `DimensionListIsDenylist`                | `true`  | If enabled, `DimensionIds` is a denylist and LODs are generated everywhere except those dimensions. If disabled, it is an allowlist and LODs are generated only in those dimensions.                                                              |
+
+The filter is enabled by default, but the default `DimensionIds` list is empty, so a fresh install does not
+change Distant Horizons' normal behaviour. In denylist mode an empty list filters nothing; in allowlist mode
+an empty list filters every dimension. For example, add `-1` to `DimensionIds` to stop Nether LOD generation,
+or set `DimensionListIsDenylist=false` with only `0` in `DimensionIds` to generate Overworld LODs only.
+
 ### Hats
 
 Hats downloads its hat models from a hardcoded URL (`http://www.creeperrepo.net/ichun/static/hats.xml`). That

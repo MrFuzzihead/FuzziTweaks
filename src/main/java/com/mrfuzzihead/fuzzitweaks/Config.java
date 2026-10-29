@@ -224,7 +224,12 @@ public class Config {
      */
     public static int leashLoadGraceTicks = 200;
 
-    public static int[] distantHorizonsDimensionIds = new int[] { 0 };
+    /**
+     * Dimension IDs this list applies to. The default is empty so the enabled filter preserves Distant
+     * Horizons' normal all-dimension behaviour; see {@link #distantHorizonsDimensionListIsDenylist} for how an
+     * empty list is interpreted in denylist and allowlist mode.
+     */
+    public static int[] distantHorizonsDimensionIds = new int[0];
 
     /**
      * If {@code true}, {@link #distantHorizonsDimensionIds} is treated as a denylist (every
@@ -337,7 +342,8 @@ public class Config {
             "DimensionIds",
             new int[0],
             "Dimension IDs this list applies to, see DimensionListIsDenylist. Vanilla: 0=Overworld, -1=Nether, 1=End; "
-                + "modded dimensions use their own IDs.")
+                + "modded dimensions use their own IDs. An empty list filters nothing in denylist mode and everything "
+                + "in allowlist mode.")
             .getIntList();
 
         distantHorizonsDimensionListIsDenylist = configuration.getBoolean(
