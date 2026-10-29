@@ -83,6 +83,8 @@ public class Config {
 
     public static boolean enableGalacticraftCompressorNEIFix = true;
 
+    public static boolean enableGalacticraftRocketNEIFix = true;
+
     public static boolean enableDistantHorizonsDimensionFilter = true;
 
     public static boolean enableArtificeEnchantIdFix = true;
@@ -312,7 +314,17 @@ public class Config {
             true,
             "Re-register GC's Ingot/Electric-Ingot Compressor NEI handlers. The GTNH Galacticraft fork comments "
                 + "these out (it expects GregTech's Implosion Compressor to show them), so the GC Compressor "
-                + "recipes never appear in NEI when GregTech isn't present.");
+                + "recipes never appear in NEI when GregTech isn't present. This does not control rocket recipes.");
+
+        enableGalacticraftRocketNEIFix = configuration.getBoolean(
+            "EnableGalacticraftRocketNEIFix",
+            CATEGORY_GALACTICRAFT,
+            // The old combined option gated both features. Inherit its value on upgrade so users who
+            // disabled it do not silently get the rocket recipes back.
+            enableGalacticraftCompressorNEIFix,
+            "Re-register GC's NASA Workbench rocket NEI handlers (Tier 1-3 and Cargo) and populate their recipe "
+                + "displays, which the GTNH fork leaves empty without its coremod. This does not control "
+                + "compressor recipes.");
 
         enableDistantHorizonsDimensionFilter = configuration.getBoolean(
             "EnableDistantHorizonsDimensionFilter",

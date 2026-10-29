@@ -46,18 +46,29 @@ import micdoodle8.mods.galacticraft.planets.mars.nei.RocketT2RecipeHandler;
 public abstract class NEIGalacticraftConfigMixin {
 
     @Inject(method = "loadConfig", at = @At("TAIL"), remap = false)
-    private void fuzziTweaks$registerIngotCompressorHandlers(CallbackInfo ci) {
-        if (!Config.enableGalacticraftCompressorNEIFix) {
-            return;
+    private void fuzziTweaks$registerNEIHandlers(CallbackInfo ci) {
+        if (Config.enableGalacticraftCompressorNEIFix) {
+            this.fuzziTweaks$registerCompressorHandlers();
         }
+        if (Config.enableGalacticraftRocketNEIFix) {
+            this.fuzziTweaks$registerRocketHandlers();
+        }
+    }
 
+    @Unique
+    private void fuzziTweaks$registerCompressorHandlers() {
         API.registerRecipeHandler(new IngotCompressorRecipeHandler());
         API.registerUsageHandler(new IngotCompressorRecipeHandler());
         API.registerRecipeHandler(new ElectricIngotCompressorRecipeHandler());
         API.registerUsageHandler(new ElectricIngotCompressorRecipeHandler());
+    }
 
-        // NASA Workbench rockets: re-register the handlers GC commented out and populate
-        // their display maps (they're empty in a non-coremod pack).
+    /**
+     * NASA Workbench rockets: re-register the handlers GC commented out and populate
+     * their display maps (they're empty in a non-coremod pack).
+     */
+    @Unique
+    private void fuzziTweaks$registerRocketHandlers() {
         API.registerRecipeHandler(new RocketT1RecipeHandler());
         API.registerUsageHandler(new RocketT1RecipeHandler());
         this.fuzziTweaks$registerTier1Rocket();
