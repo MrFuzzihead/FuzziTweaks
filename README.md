@@ -76,6 +76,17 @@ remaining entry in the manifest the way the unpatched mod does.
 The hats themselves are third-party content served by whoever runs the mirror. A pack that has to build
 offline should ship the downloaded `hats/` folder in the pack rather than rely on the download at runtime.
 
+### Galacticraft
+
+Galacticraft tweaks all share a late mixin gate, so they are only loaded when Galacticraft is present. Everything
+lives in the `galacticraft` section of `config/fuzzitweaks.cfg`:
+
+| Option                                        | Default | What it does                                                                                                                                                                                                                                                                                                                       |
+|-----------------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableGalacticraftMain`                      | `true`  | Master switch for all Galacticraft mixins. When disabled, none of the mixins below are applied; the individual switches still have their own settings.                                                                                                                                                                              |
+| `EnableGalacticraftCoalGeneratorFuelTweak`    | `true`  | Lets the Coal Generator burn any furnace-burnable item (charcoal, wood, mod fuels, ...) instead of only coal and coal blocks, scaled to each item's vanilla furnace burn time at Galacticraft's 1/5 rate. The GUI slot, hoppers/pipes and the tile's `isItemValidForSlot` all accept the wider fuel set.                        |
+| `EnableGalacticraftCompressorNEIFix`          | `true`  | Re-registers Galacticraft's Ingot/Electric-Ingot Compressor NEI handlers and the NASA Workbench rocket displays (Tier 1-3 and cargo variants) that the GTNH fork leaves to GregTech. Disabling it removes all of those recipes from NEI, not just the compressor handlers.                                                           |
+
 ### Squid spawns
 
 The [Squidless](https://github.com/hilburn/Squidless) mod is folded into FuzziTweaks. It stops squids from

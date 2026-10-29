@@ -69,6 +69,11 @@ public class Config {
 
     public static boolean enableMCPatcherTweaks = true;
 
+    /**
+     * Main switch for all Galacticraft mixins. Individual Galacticraft tweaks still have their own switches.
+     */
+    public static boolean enableGalacticraftMain = true;
+
     public static boolean enableGalacticraftCoalGeneratorFuelTweak = true;
 
     public static boolean enableGalacticraftCompressorNEIFix = true;
@@ -263,6 +268,13 @@ public class Config {
 
         enableMCPatcherTweaks = configuration
             .getBoolean("EnableMCPatcherTweaks", CATEGORY_MCPATCHER, true, "Enable fixes and tweaks for MCPatcher");
+
+        enableGalacticraftMain = configuration.getBoolean(
+            "EnableGalacticraftMain",
+            CATEGORY_GALACTICRAFT,
+            true,
+            "Main switch for all Galacticraft tweaks. When disabled, none of the Galacticraft mixins are applied. "
+                + "Individual Galacticraft tweaks still have their own settings below.");
 
         enableGalacticraftCoalGeneratorFuelTweak = configuration.getBoolean(
             "EnableGalacticraftCoalGeneratorFuelTweak",

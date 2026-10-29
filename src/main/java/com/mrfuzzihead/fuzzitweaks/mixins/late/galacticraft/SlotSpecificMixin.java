@@ -11,6 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.mrfuzzihead.fuzzitweaks.Config;
+
 import micdoodle8.mods.galacticraft.core.inventory.SlotSpecific;
 
 /**
@@ -31,7 +33,8 @@ public abstract class SlotSpecificMixin {
 
     @Inject(method = "isItemValid", at = @At("HEAD"), cancellable = true)
     private void fuzziTweaks$allowBurnablesInCoalSlots(ItemStack compareStack, CallbackInfoReturnable<Boolean> cir) {
-        if (!this.isInverted && compareStack != null
+        if (Config.enableGalacticraftCoalGeneratorFuelTweak && !this.isInverted
+            && compareStack != null
             && TileEntityFurnace.getItemBurnTime(compareStack) > 0
             && this.fuzziTweaks$whitelistsCoal()) {
             cir.setReturnValue(true);

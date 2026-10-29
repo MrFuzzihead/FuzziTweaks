@@ -12,6 +12,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.mrfuzzihead.fuzzitweaks.Config;
+
 import codechicken.nei.PositionedStack;
 import codechicken.nei.api.API;
 import micdoodle8.mods.galacticraft.core.items.GCItems;
@@ -45,6 +47,10 @@ public abstract class NEIGalacticraftConfigMixin {
 
     @Inject(method = "loadConfig", at = @At("TAIL"), remap = false)
     private void fuzziTweaks$registerIngotCompressorHandlers(CallbackInfo ci) {
+        if (!Config.enableGalacticraftCompressorNEIFix) {
+            return;
+        }
+
         API.registerRecipeHandler(new IngotCompressorRecipeHandler());
         API.registerUsageHandler(new IngotCompressorRecipeHandler());
         API.registerRecipeHandler(new ElectricIngotCompressorRecipeHandler());
