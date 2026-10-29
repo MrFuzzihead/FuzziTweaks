@@ -231,7 +231,7 @@ public class Config {
             "EnableDespawnModule",
             CATEGORY_MINECRAFT,
             true,
-            "Enable module that lets mobs holding items/armor despawn");
+            "Enable module that lets mobs holding items/armor despawn; picked-up equipment is dropped on despawn");
 
         maxMobBlockLightLevel = configuration.getInt(
             "MaxMobSpawnLightLevel",
