@@ -37,7 +37,7 @@ public enum Mixins implements IMixins {
         .setApplyIf(() -> Config.enableBackgroundScreenshot)),
 
     PROJECTE(new MixinBuilder().setPhase(Phase.LATE)
-        .addCommonMixins("projecte.ItemSearchHelperMixin")
+        .addClientMixins("projecte.ItemSearchHelperNEIMixin")
         .addRequiredMod(TargetMods.PROJECTE)
         .setApplyIf(() -> Config.enableProjectETweaks)),
 
