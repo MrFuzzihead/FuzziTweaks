@@ -1,12 +1,17 @@
 package com.mrfuzzihead.fuzzitweaks;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.common.config.Configuration;
 
 public class Config {
+
+    /** Canonical path of the config file that has already been loaded, if any. */
+    private static File synchronizedConfigurationFile;
 
     /** Category used for Minecraft tweak settings. */
     public static final String CATEGORY_MINECRAFT = "minecraft";
@@ -269,8 +274,33 @@ public class Config {
         return base;
     }
 
-    public static void synchronizeConfiguration(File configFile) {
-        Configuration configuration = new Configuration(configFile);
+    /**
+     * Resolves the config file used by both mixin selection and runtime settings. The early/late mixin loaders
+     * call this before FML has built its pre-init event, so they pass {@code null} and use LaunchWrapper's
+     * {@code minecraftHome}. Pre-init passes FML's suggested file; canonicalising both spellings means the normal
+     * case compares equal and the file is only read once.
+     */
+    public static File resolveConfigurationFile(File suggestedFile) {
+        File file = suggestedFile != null ? suggestedFile : new File(Launch.minecraftHome, "config/fuzzitweaks.cfg");
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException e) {
+            return file.getAbsoluteFile();
+        }
+    }
+
+    /**
+     * Loads the config once per resolved path. The mixin loaders and pre-init all go through
+     * {@link #resolveConfigurationFile(File)}; repeat calls for the same file are no-ops, so the mixin gates and
+     * the runtime settings always see the same values without repeatedly parsing and saving the file.
+     */
+    public static synchronized void synchronizeConfiguration(File configFile) {
+        final File resolvedConfigFile = resolveConfigurationFile(configFile);
+        if (resolvedConfigFile.equals(synchronizedConfigurationFile)) {
+            return;
+        }
+
+        Configuration configuration = new Configuration(resolvedConfigFile);
 
         enableDespawnModule = configuration.getBoolean(
             "EnableDespawnModule",
@@ -591,5 +621,6 @@ public class Config {
         if (configuration.hasChanged()) {
             configuration.save();
         }
+        synchronizedConfigurationFile = resolvedConfigFile;
     }
 }

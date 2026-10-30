@@ -33,6 +33,17 @@ Everything lives in the `ai` section of `config/fuzzitweaks.cfg`:
 deal roughly half the melee damage they do in unpatched 1.7.10 (the bugged behavior lets them hit about
 twice as often as intended). Set `EnableMeleeAttackRateFix=false` to keep the old, buggy rate.
 
+### Despawn module and background screenshots
+
+These vanilla-facing tweaks live in the `minecraft` section of `config/fuzzitweaks.cfg`:
+
+| Option                       | Default | What it does                                                                                                                                                                                                                                                                                                                       |
+|------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableDespawnModule`        | `true`  | Lets mobs that picked up equipment despawn again. Vanilla marks any successful item/armor pickup as persistent, so such mobs never despawn; this suppresses only that pickup-driven persistence. When one of those mobs does despawn, the picked-up equipment is dropped instead of deleted. Name-tag/NBT persistence and naturally spawned equipment are untouched. The module is skipped when Hodgepodge is installed, because Hodgepodge already handles this case. |
+| `EnableBackgroundScreenshot` | `true`  | Takes framebuffer F2 screenshots off the main thread. Pixels are copied on the render thread, then PNG compression and disk I/O run on a daemon writer thread so the game does not freeze while saving. With the framebuffer disabled (or this option off) the vanilla synchronous screenshot path is used. Screenshots use vanilla's timestamped naming and only one capture is allowed at a time. |
+
+Both gates are read at startup, so restart the game after changing them.
+
 ### Mob spawn light levels
 
 Hostile mobs use modern Java Edition's light rules instead of 1.7.10's block-light-7 check. The raw
@@ -70,6 +81,43 @@ Only a restored mob with a saved fence-post anchor and an unloaded/unresolved fe
 taking a lead off by hand, a player/entity UUID anchor, malformed NBT, and a fence known to have been removed
 all keep vanilla behaviour, so this cannot be used to farm lead items or undo a player breaking a knot.
 
+### ProjectE
+
+ProjectE's transmutation search selects its NEI helper when NEI is installed, but that helper builds a filter from
+NEI's deprecated `SearchField.searchProviders` list. GTNH's NEI no longer populates that list, so every ProjectE
+search matched every item. FuzziTweaks redirects the helper to NEI's parser-backed `SearchField.getFilter`, restoring
+NEI search syntax such as `@mod`, `$ore`, regex, negation and quoting for ProjectE's transmutation search. The
+integration is client-only. On an older NEI without that method it falls back to ProjectE's original behaviour.
+Everything lives in the `projecte` section of `config/fuzzitweaks.cfg`:
+
+| Option                 | Default | What it does                                                                                                                        |
+|------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableProjectETweaks` | `true`  | Restores NEI syntax in ProjectE's transmutation search. Disable it to leave ProjectE's own search helper untouched.                 |
+
+### Not Enough Items
+
+FuzziTweaks' NEI tweak makes the world mob-spawn overlay use the same configured block-light and sky-light
+thresholds as its hostile-mob spawn rules (`MaxMobSpawnLightLevel` and `MaxMobSkyLightLevel`). The collision,
+liquid and overlay-mode checks are unchanged. Disabling the option leaves NEI's original fixed thresholds in place.
+Galacticraft's NEI recipe-handler fixes have their own options in the Galacticraft section below. Everything lives
+in the `nei` section of `config/fuzzitweaks.cfg`:
+
+| Option              | Default | What it does                                                                                                                                 |
+|---------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableNEITweaks`   | `true`  | Makes NEI's mob-spawn overlay agree with FuzziTweaks' spawn-light settings. Disable it to use NEI's unmodified overlay.                       |
+
+### MCPatcher
+
+MCPatcher's mob texture lookup used to run resource-pack I/O on the render thread the first time each texture was
+seen, which could stall rendering for several frames. FuzziTweaks performs those scans on a single low-priority
+daemon worker and returns the original texture until a result is ready. Results, including "no variants" and scan
+failures, are cached; failed or absent scans are retried after a resource reload. There is no visual change. The
+tweak only loads when MCPatcher is present and lives in the `mcpatcher` section of `config/fuzzitweaks.cfg`:
+
+| Option                  | Default | What it does                                                                                                                              |
+|-------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableMCPatcherTweaks` | `true`  | Moves MCPatcher's mob-texture resource scans off the render thread. Disable it to use MCPatcher's original blocking lookup.                |
+
 ### Thaumic Additions
 
 Thaumic Additions tweaks share one late mixin gate, so nothing is loaded unless Thaumic Additions is
@@ -83,6 +131,19 @@ present. Everything lives in the `thaumicadditions` section of `config/fuzzitwea
 
 The two individual options are checked inside their mixins, so they can be changed without touching the
 main startup gate.
+
+### Artifice
+
+Artifice registers its three enchantments by probing IDs upwards and relying on the vanilla `Enchantment`
+constructor to throw when an ID is taken. An ID-conflict detector replaces that constructor with a hook that records
+the collision instead of throwing, so Artifice's probes all succeed at the same first free ID and overwrite each
+other. FuzziTweaks assigns a verified-free ID to each enabled Artifice enchantment before constructing it. In a
+clean, unpatched environment the chosen IDs are the same as Artifice's original probe, so existing worlds are
+unaffected. Everything lives in the `artifice` section of `config/fuzzitweaks.cfg`:
+
+| Option                       | Default | What it does                                                                                                                                                         |
+|------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableArtificeEnchantIdFix` | `true`  | Gives Artifice's invisible, soul-stealing and resistance enchantments distinct free IDs when an ID-conflict detector suppresses the constructor's duplicate check. Disable it to leave Artifice's original registration alone. |
 
 ### Distant Horizons
 

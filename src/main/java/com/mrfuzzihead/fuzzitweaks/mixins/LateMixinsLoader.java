@@ -1,12 +1,9 @@
 package com.mrfuzzihead.fuzzitweaks.mixins;
 
-import java.io.File;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
-
-import net.minecraft.launchwrapper.Launch;
 
 import com.gtnewhorizon.gtnhmixins.ILateMixinLoader;
 import com.gtnewhorizon.gtnhmixins.LateMixin;
@@ -32,9 +29,9 @@ public class LateMixinsLoader implements ILateMixinLoader {
     public List<String> getMixins(Set<String> loadedMods) {
         // Load config here so that setApplyIf conditions read values from the .cfg file
         // rather than the hard-coded field defaults. getMixins() is called before
-        // FMLPreInitializationEvent, so we must resolve the config file path ourselves
-        // using Launch.minecraftHome which is set by LaunchWrapper very early.
-        Config.synchronizeConfiguration(new File(Launch.minecraftHome, "config/fuzzitweaks.cfg"));
+        // FMLPreInitializationEvent, so Config resolves the path from Launch.minecraftHome;
+        // pre-init uses the same resolver and therefore does not reload the file.
+        Config.synchronizeConfiguration(Config.resolveConfigurationFile(null));
         return IMixins.getLateMixins(Mixins.class, loadedMods);
     }
 }

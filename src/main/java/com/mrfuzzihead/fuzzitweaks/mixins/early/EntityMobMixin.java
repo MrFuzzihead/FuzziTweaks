@@ -2,12 +2,9 @@ package com.mrfuzzihead.fuzzitweaks.mixins.early;
 
 import java.util.Random;
 
-import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.monster.IMob;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.World;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,12 +16,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mrfuzzihead.fuzzitweaks.Config;
 
 @Mixin(EntityMob.class)
-public class EntityMobMixin extends EntityCreature implements IMob {
-
-    public EntityMobMixin(World p_i1602_1_) {
-        super(p_i1602_1_);
-        this.experienceValue = 5;
-    }
+public abstract class EntityMobMixin {
 
     /**
      * Rejects excess block light after vanilla's raw sky-light gate but before
@@ -41,11 +33,12 @@ public class EntityMobMixin extends EntityCreature implements IMob {
         cancellable = true,
         require = 1)
     protected void fuzziTweaks$rejectExcessBlockLight(CallbackInfoReturnable<Boolean> cir) {
-        final int x = MathHelper.floor_double(this.posX);
-        final int y = MathHelper.floor_double(this.boundingBox.minY);
-        final int z = MathHelper.floor_double(this.posZ);
+        final EntityMob mob = (EntityMob) (Object) this;
+        final int x = MathHelper.floor_double(mob.posX);
+        final int y = MathHelper.floor_double(mob.boundingBox.minY);
+        final int z = MathHelper.floor_double(mob.posZ);
 
-        if (this.worldObj.getSavedLightValue(EnumSkyBlock.Block, x, y, z) > Config.maxMobBlockLightLevel) {
+        if (mob.worldObj.getSavedLightValue(EnumSkyBlock.Block, x, y, z) > Config.maxMobBlockLightLevel) {
             cir.setReturnValue(false);
         }
     }

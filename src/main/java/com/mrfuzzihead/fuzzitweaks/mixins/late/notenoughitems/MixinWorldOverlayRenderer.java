@@ -2,12 +2,12 @@ package com.mrfuzzihead.fuzzitweaks.mixins.late.notenoughitems;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.SpawnerAnimals;
 import net.minecraft.world.chunk.Chunk;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,14 +19,18 @@ import codechicken.nei.WorldOverlayRenderer;
 @Mixin(WorldOverlayRenderer.class)
 public class MixinWorldOverlayRenderer {
 
+    @Final
     @Shadow(remap = false)
-    private static final Entity dummyEntity = new EntityPig(null);
+    private static Entity dummyEntity;
+    @Final
     @Shadow(remap = false)
-    private static final AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox(0, 0, 0, 0, 0, 0);
+    private static AxisAlignedBB aabb;
 
     /**
      * @author FuzziTweaks
-     * @reason ASD
+     * @reason Make NEI's mob-spawn overlay use the same block-light and sky-light thresholds as the FuzziTweaks
+     *         spawn rules. The vanilla method hardcodes a block-light limit of 8 and an effective sky-light
+     *         limit of 8; the collision, liquid and return-value logic is otherwise preserved.
      */
     @Overwrite(remap = false)
     private static byte getSpawnMode(Chunk chunk, int x, int y, int z) {

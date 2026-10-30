@@ -70,7 +70,8 @@ public abstract class NEIGalacticraftConfigMixin {
     @Unique
     private void fuzziTweaks$registerRocketHandlers() {
         // These config methods only fill static maps; reuse one instance per config class for the whole pass
-        // instead of allocating one for every cargo variant.
+        // instead of allocating one for every cargo variant. NEI may run plugins from a parallel loader thread,
+        // but each config class owns a separate static map and this pass is the only writer for it.
         final NEIGalacticraftConfig coreConfig = new NEIGalacticraftConfig();
 
         API.registerRecipeHandler(new RocketT1RecipeHandler());

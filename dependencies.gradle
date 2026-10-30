@@ -41,17 +41,16 @@ dependencies {
     compileOnly(rfg.deobf("curse.maven:Artifice-223174:2248653"))
     compileOnly(rfg.deobf("curse.maven:Hats-229073:2232170"))
     // runtimeOnlyNonPublishable("curse.maven:iChunUtil-229060:2338149")
-    /*devOnlyNonPublishable("com.github.GTNewHorizons:Galacticraft:3.4.33-GTNH:dev") {
-        exclude module: "GT5-Unofficial"
-    }*/
     compileOnly("com.github.GTNewHorizons:Galacticraft:3.4.33-GTNH:dev")
     // Railcraft's CartUtils.vanillaCartItemMap is the authoritative list of cart items it replaces. Optional at
     // runtime - the mixin checks Loader.isModLoaded("Railcraft") before touching RailcraftCartCompat.
     compileOnly("com.github.GTNewHorizons:Railcraft:9.17.31:dev") { transitive = false }
     compileOnly("it.unimi.dsi:fastutil:8.5.16")
+    // Distant Horizons alpha20 is a local 1.7.10 dev build kept in libs/ for compile-only access to the DH
+    // level wrapper API; this build has no Maven coordinate for that artifact.
     compileOnly(project.files("libs/distanthorizons-alpha20-dev.jar"))
 
-    // Plain-JVM unit tests (FastTrig and friends) - no Minecraft classes involved.
+    // JUnit 5 tests; they run without launching the game.
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
