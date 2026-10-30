@@ -1,6 +1,8 @@
 package com.mrfuzzihead.fuzzitweaks;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import net.minecraftforge.common.config.Configuration;
 
@@ -105,6 +107,8 @@ public class Config {
      * new host. Rewriting the per-file URLs as well is required: the URLs inside the manifest point at
      * {@code http://cdn.redstone.tech}, which redirects to HTTPS, and {@code HttpURLConnection} does not follow
      * protocol-changing redirects. Set this to your own mirror, or leave it blank to disable the rewrite.
+     * The value is trimmed, stripped of trailing slashes, and validated when the config loads; an invalid value
+     * is treated as blank.
      */
     public static String hatsDownloadBaseUrl = "http://dist.creeper.host";
 
@@ -237,6 +241,33 @@ public class Config {
      * allowlist (only the listed dimensions may generate LODs).
      */
     public static boolean distantHorizonsDimensionListIsDenylist = true;
+
+    /**
+     * Keeps the Hats URL handling path cheap: trim the configured base once, remove the trailing slashes that
+     * would otherwise leave a double slash before the copied path, and reject values the URL parser cannot use.
+     * A malformed value is treated like a blank one, which disables rewriting and leaves the original Hats URL
+     * untouched.
+     */
+    private static String normalizeHatsDownloadBaseUrl(String configured) {
+        if (configured == null) {
+            return "";
+        }
+
+        String base = configured.trim();
+        while (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        if (base.isEmpty()) {
+            return "";
+        }
+
+        try {
+            new URL(base);
+        } catch (MalformedURLException e) {
+            return "";
+        }
+        return base;
+    }
 
     public static void synchronizeConfiguration(File configFile) {
         Configuration configuration = new Configuration(configFile);
@@ -373,17 +404,19 @@ public class Config {
                 + "selection GUI). The same content is still served by CreeperHost's successor CDN, see "
                 + "HatDownloadBaseUrl.");
 
-        hatsDownloadBaseUrl = configuration.getString(
-            "HatDownloadBaseUrl",
-            CATEGORY_HATS,
-            "http://dist.creeper.host",
-            "scheme://host used for Hats hat downloads. Only URLs that already point at a known Hats repository "
-                + "host (creeperrepo.net, redstone.tech, dist.creeper.host, filedist.ch) get their host swapped for "
-                + "this value and the path is kept as-is, so the manifest and every hat file land on the same "
-                + "layout on the new host. Rewriting the per-file URLs is required too: the URLs inside the "
-                + "manifest point at http://cdn.redstone.tech which redirects to HTTPS, and HttpURLConnection does "
-                + "not follow protocol-changing redirects. Point this at your own mirror to stop depending on "
-                + "third parties, or leave it blank to disable the rewrite.");
+        hatsDownloadBaseUrl = normalizeHatsDownloadBaseUrl(
+            configuration.getString(
+                "HatDownloadBaseUrl",
+                CATEGORY_HATS,
+                "http://dist.creeper.host",
+                "scheme://host used for Hats hat downloads. Only URLs that already point at a known Hats repository "
+                    + "host (creeperrepo.net, redstone.tech, dist.creeper.host, filedist.ch) get their host swapped "
+                    + "for this value and the path is kept as-is, so the manifest and every hat file land on the same "
+                    + "layout on the new host. Rewriting the per-file URLs is required too: the URLs inside the "
+                    + "manifest point at http://cdn.redstone.tech which redirects to HTTPS, and HttpURLConnection does "
+                    + "not follow protocol-changing redirects. Point this at your own mirror to stop depending on "
+                    + "third parties, or leave it blank to disable the rewrite. The value is trimmed, stripped of "
+                    + "trailing slashes, and validated when the config loads; an invalid value disables the rewrite."));
 
         preferLocalHatMobSupport = configuration.getBoolean(
             "PreferLocalHatMobSupport",

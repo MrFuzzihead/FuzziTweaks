@@ -53,7 +53,8 @@ public final class HatsCdn {
      *
      * <p>
      * The path and everything after it are copied verbatim, including the {@code %20} escapes the mod applies
-     * to hat file names, so nothing is double-encoded.
+     * to hat file names, so nothing is double-encoded. {@link Config#hatsDownloadBaseUrl} is trimmed and validated
+     * once by {@link Config#synchronizeConfiguration(java.io.File)}, so this hot path only checks for a blank value.
      * </p>
      *
      * @param spec
@@ -66,8 +67,7 @@ public final class HatsCdn {
         }
 
         final String base = Config.hatsDownloadBaseUrl;
-        if (base == null || base.trim()
-            .isEmpty()) {
+        if (base == null || base.isEmpty()) {
             return spec;
         }
 
@@ -83,12 +83,7 @@ public final class HatsCdn {
             return spec;
         }
 
-        String trimmedBase = base.trim();
-        while (trimmedBase.endsWith("/")) {
-            trimmedBase = trimmedBase.substring(0, trimmedBase.length() - 1);
-        }
-
-        return pathStart < 0 ? trimmedBase : trimmedBase + spec.substring(pathStart);
+        return pathStart < 0 ? base : base + spec.substring(pathStart);
     }
 
     /**

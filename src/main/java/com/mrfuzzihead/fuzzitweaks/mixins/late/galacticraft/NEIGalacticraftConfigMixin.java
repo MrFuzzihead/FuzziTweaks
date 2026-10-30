@@ -69,18 +69,26 @@ public abstract class NEIGalacticraftConfigMixin {
      */
     @Unique
     private void fuzziTweaks$registerRocketHandlers() {
+        // These config methods only fill static maps; reuse one instance per config class for the whole pass
+        // instead of allocating one for every cargo variant.
+        final NEIGalacticraftConfig coreConfig = new NEIGalacticraftConfig();
+
         API.registerRecipeHandler(new RocketT1RecipeHandler());
         API.registerUsageHandler(new RocketT1RecipeHandler());
-        this.fuzziTweaks$registerTier1Rocket();
+        this.fuzziTweaks$registerTier1Rocket(coreConfig);
+
+        final NEIGalacticraftMarsConfig marsConfig = new NEIGalacticraftMarsConfig();
 
         API.registerRecipeHandler(new RocketT2RecipeHandler());
         API.registerUsageHandler(new RocketT2RecipeHandler());
-        this.fuzziTweaks$registerTier2Rocket();
+        this.fuzziTweaks$registerTier2Rocket(marsConfig);
+
+        final NEIGalacticraftAsteroidsConfig asteroidsConfig = new NEIGalacticraftAsteroidsConfig();
 
         API.registerRecipeHandler(new RocketT3RecipeHandler());
         API.registerUsageHandler(new RocketT3RecipeHandler());
-        this.fuzziTweaks$registerTier3Rocket();
-        this.fuzziTweaks$registerCargoRocket();
+        this.fuzziTweaks$registerTier3Rocket(asteroidsConfig);
+        this.fuzziTweaks$registerCargoRocket(marsConfig);
     }
 
     /**
@@ -98,7 +106,7 @@ public abstract class NEIGalacticraftConfigMixin {
      * </pre>
      */
     @Unique
-    private void fuzziTweaks$registerTier1Rocket() {
+    private void fuzziTweaks$registerTier1Rocket(NEIGalacticraftConfig config) {
         final HashMap<Integer, PositionedStack> base = new HashMap<>();
 
         base.put(1, new PositionedStack(new ItemStack(GCItems.partNoseCone, 1, 0), 45, 15));
@@ -114,14 +122,14 @@ public abstract class NEIGalacticraftConfigMixin {
         base.put(14, new PositionedStack(new ItemStack(GCItems.partFins, 1, 0), 72, 105));
 
         final ItemStack chest = new ItemStack(Blocks.chest);
-        this.fuzziTweaks$registerTier1Cargo(base, null, null, null, 0);
-        this.fuzziTweaks$registerTier1Cargo(base, chest, null, null, 1);
-        this.fuzziTweaks$registerTier1Cargo(base, null, chest, null, 1);
-        this.fuzziTweaks$registerTier1Cargo(base, null, null, chest, 1);
-        this.fuzziTweaks$registerTier1Cargo(base, chest, chest, null, 2);
-        this.fuzziTweaks$registerTier1Cargo(base, chest, null, chest, 2);
-        this.fuzziTweaks$registerTier1Cargo(base, null, chest, chest, 2);
-        this.fuzziTweaks$registerTier1Cargo(base, chest, chest, chest, 3);
+        this.fuzziTweaks$registerTier1Cargo(config, base, null, null, null, 0);
+        this.fuzziTweaks$registerTier1Cargo(config, base, chest, null, null, 1);
+        this.fuzziTweaks$registerTier1Cargo(config, base, null, chest, null, 1);
+        this.fuzziTweaks$registerTier1Cargo(config, base, null, null, chest, 1);
+        this.fuzziTweaks$registerTier1Cargo(config, base, chest, chest, null, 2);
+        this.fuzziTweaks$registerTier1Cargo(config, base, chest, null, chest, 2);
+        this.fuzziTweaks$registerTier1Cargo(config, base, null, chest, chest, 2);
+        this.fuzziTweaks$registerTier1Cargo(config, base, chest, chest, chest, 3);
     }
 
     /**
@@ -130,8 +138,8 @@ public abstract class NEIGalacticraftConfigMixin {
      * 16=(116,8), 17=(142,8). The output bullet sits at (139,92).
      */
     @Unique
-    private void fuzziTweaks$registerTier1Cargo(HashMap<Integer, PositionedStack> base, ItemStack s15, ItemStack s16,
-        ItemStack s17, int meta) {
+    private void fuzziTweaks$registerTier1Cargo(NEIGalacticraftConfig config, HashMap<Integer, PositionedStack> base,
+        ItemStack s15, ItemStack s16, ItemStack s17, int meta) {
         final HashMap<Integer, PositionedStack> input = new HashMap<>(base);
         if (s15 != null) {
             input.put(15, new PositionedStack(s15, 90, 8));
@@ -142,7 +150,7 @@ public abstract class NEIGalacticraftConfigMixin {
         if (s17 != null) {
             input.put(17, new PositionedStack(s17, 142, 8));
         }
-        new NEIGalacticraftConfig().registerRocketBenchRecipe(
+        config.registerRocketBenchRecipe(
             input,
             new PositionedStack(new ItemStack(GCItems.rocketTier1, 1, meta), 139, 92));
     }
@@ -154,7 +162,7 @@ public abstract class NEIGalacticraftConfigMixin {
      * applies (it draws at dest (0,-8) from texture crop (3,4)).
      */
     @Unique
-    private void fuzziTweaks$registerTier2Rocket() {
+    private void fuzziTweaks$registerTier2Rocket(NEIGalacticraftMarsConfig config) {
         final ArrayList<PositionedStack> base = new ArrayList<>();
         base.add(new PositionedStack(new ItemStack(GCItems.partNoseCone, 1, 0), 45, 7));
         for (int row = 0; row < 5; row++) {
@@ -171,19 +179,19 @@ public abstract class NEIGalacticraftConfigMixin {
         base.add(new PositionedStack(new ItemStack(GCItems.partFins, 1, 0), 72, 115));
 
         final ItemStack chest = new ItemStack(Blocks.chest);
-        this.fuzziTweaks$registerTier2Cargo(base, null, null, null, 0);
-        this.fuzziTweaks$registerTier2Cargo(base, chest, null, null, 1);
-        this.fuzziTweaks$registerTier2Cargo(base, null, chest, null, 1);
-        this.fuzziTweaks$registerTier2Cargo(base, null, null, chest, 1);
-        this.fuzziTweaks$registerTier2Cargo(base, chest, chest, null, 2);
-        this.fuzziTweaks$registerTier2Cargo(base, chest, null, chest, 2);
-        this.fuzziTweaks$registerTier2Cargo(base, null, chest, chest, 2);
-        this.fuzziTweaks$registerTier2Cargo(base, chest, chest, chest, 3);
+        this.fuzziTweaks$registerTier2Cargo(config, base, null, null, null, 0);
+        this.fuzziTweaks$registerTier2Cargo(config, base, chest, null, null, 1);
+        this.fuzziTweaks$registerTier2Cargo(config, base, null, chest, null, 1);
+        this.fuzziTweaks$registerTier2Cargo(config, base, null, null, chest, 1);
+        this.fuzziTweaks$registerTier2Cargo(config, base, chest, chest, null, 2);
+        this.fuzziTweaks$registerTier2Cargo(config, base, chest, null, chest, 2);
+        this.fuzziTweaks$registerTier2Cargo(config, base, null, chest, chest, 2);
+        this.fuzziTweaks$registerTier2Cargo(config, base, chest, chest, chest, 3);
     }
 
     @Unique
-    private void fuzziTweaks$registerTier2Cargo(ArrayList<PositionedStack> base, ItemStack s19, ItemStack s20,
-        ItemStack s21, int meta) {
+    private void fuzziTweaks$registerTier2Cargo(NEIGalacticraftMarsConfig config, ArrayList<PositionedStack> base,
+        ItemStack s19, ItemStack s20, ItemStack s21, int meta) {
         final ArrayList<PositionedStack> input = new ArrayList<>(base);
         if (s19 != null) {
             input.add(new PositionedStack(s19, 90, 0));
@@ -194,7 +202,7 @@ public abstract class NEIGalacticraftConfigMixin {
         if (s21 != null) {
             input.add(new PositionedStack(s21, 142, 0));
         }
-        new NEIGalacticraftMarsConfig().registerRocketBenchRecipe(
+        config.registerRocketBenchRecipe(
             input,
             new PositionedStack(new ItemStack(MarsItems.spaceship, 1, meta), 139, 102));
     }
@@ -205,7 +213,7 @@ public abstract class NEIGalacticraftConfigMixin {
      * the {@link RocketT2RecipeHandler}).
      */
     @Unique
-    private void fuzziTweaks$registerTier3Rocket() {
+    private void fuzziTweaks$registerTier3Rocket(NEIGalacticraftAsteroidsConfig config) {
         final ArrayList<PositionedStack> base = new ArrayList<>();
         base.add(new PositionedStack(new ItemStack(AsteroidsItems.heavyNoseCone, 1, 0), 45, 7));
         for (int row = 0; row < 5; row++) {
@@ -222,19 +230,19 @@ public abstract class NEIGalacticraftConfigMixin {
         base.add(new PositionedStack(new ItemStack(AsteroidsItems.basicItem, 1, 2), 72, 115));
 
         final ItemStack chest = new ItemStack(Blocks.chest);
-        this.fuzziTweaks$registerTier3Cargo(base, null, null, null, 0);
-        this.fuzziTweaks$registerTier3Cargo(base, chest, null, null, 1);
-        this.fuzziTweaks$registerTier3Cargo(base, null, chest, null, 1);
-        this.fuzziTweaks$registerTier3Cargo(base, null, null, chest, 1);
-        this.fuzziTweaks$registerTier3Cargo(base, chest, chest, null, 2);
-        this.fuzziTweaks$registerTier3Cargo(base, chest, null, chest, 2);
-        this.fuzziTweaks$registerTier3Cargo(base, null, chest, chest, 2);
-        this.fuzziTweaks$registerTier3Cargo(base, chest, chest, chest, 3);
+        this.fuzziTweaks$registerTier3Cargo(config, base, null, null, null, 0);
+        this.fuzziTweaks$registerTier3Cargo(config, base, chest, null, null, 1);
+        this.fuzziTweaks$registerTier3Cargo(config, base, null, chest, null, 1);
+        this.fuzziTweaks$registerTier3Cargo(config, base, null, null, chest, 1);
+        this.fuzziTweaks$registerTier3Cargo(config, base, chest, chest, null, 2);
+        this.fuzziTweaks$registerTier3Cargo(config, base, chest, null, chest, 2);
+        this.fuzziTweaks$registerTier3Cargo(config, base, null, chest, chest, 2);
+        this.fuzziTweaks$registerTier3Cargo(config, base, chest, chest, chest, 3);
     }
 
     @Unique
-    private void fuzziTweaks$registerTier3Cargo(ArrayList<PositionedStack> base, ItemStack s19, ItemStack s20,
-        ItemStack s21, int meta) {
+    private void fuzziTweaks$registerTier3Cargo(NEIGalacticraftAsteroidsConfig config, ArrayList<PositionedStack> base,
+        ItemStack s19, ItemStack s20, ItemStack s21, int meta) {
         final ArrayList<PositionedStack> input = new ArrayList<>(base);
         if (s19 != null) {
             input.add(new PositionedStack(s19, 90, 0));
@@ -245,7 +253,7 @@ public abstract class NEIGalacticraftConfigMixin {
         if (s21 != null) {
             input.add(new PositionedStack(s21, 142, 0));
         }
-        new NEIGalacticraftAsteroidsConfig().registerRocketBenchRecipe(
+        config.registerRocketBenchRecipe(
             input,
             new PositionedStack(new ItemStack(AsteroidsItems.tier3Rocket, 1, meta), 139, 102));
     }
@@ -258,7 +266,7 @@ public abstract class NEIGalacticraftConfigMixin {
      * chest metas 3/0/1 -> Cargo Rocket metas 11/12/13.
      */
     @Unique
-    private void fuzziTweaks$registerCargoRocket() {
+    private void fuzziTweaks$registerCargoRocket(NEIGalacticraftMarsConfig config) {
         final ArrayList<PositionedStack> base = new ArrayList<>();
         base.add(new PositionedStack(new ItemStack(GCItems.basicItem, 1, 14), 130, -6)); // advanced wafer
         base.add(new PositionedStack(new ItemStack(GCItems.partNoseCone, 1, 0), 49, 3));
@@ -277,16 +285,17 @@ public abstract class NEIGalacticraftConfigMixin {
         base.add(new PositionedStack(new ItemStack(GCItems.partFins, 1, 0), 22, 93));
         base.add(new PositionedStack(new ItemStack(GCItems.partFins, 1, 0), 76, 93));
 
-        this.fuzziTweaks$registerCargoChest(base, 3, 11);
-        this.fuzziTweaks$registerCargoChest(base, 0, 12);
-        this.fuzziTweaks$registerCargoChest(base, 1, 13);
+        this.fuzziTweaks$registerCargoChest(config, base, 3, 11);
+        this.fuzziTweaks$registerCargoChest(config, base, 0, 12);
+        this.fuzziTweaks$registerCargoChest(config, base, 1, 13);
     }
 
     @Unique
-    private void fuzziTweaks$registerCargoChest(ArrayList<PositionedStack> parts, int chestMeta, int rocketMeta) {
+    private void fuzziTweaks$registerCargoChest(NEIGalacticraftMarsConfig config, ArrayList<PositionedStack> parts,
+        int chestMeta, int rocketMeta) {
         final ArrayList<PositionedStack> input = new ArrayList<>(parts);
         input.add(new PositionedStack(RecipeUtil.getChestItemStack(1, chestMeta), 130, 30));
-        new NEIGalacticraftMarsConfig().registerCargoBenchRecipe(
+        config.registerCargoBenchRecipe(
             input,
             new PositionedStack(new ItemStack(MarsItems.spaceship, 1, rocketMeta), 130, 57));
     }

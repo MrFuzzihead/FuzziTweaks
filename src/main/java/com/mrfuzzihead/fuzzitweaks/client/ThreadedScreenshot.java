@@ -2,21 +2,24 @@ package com.mrfuzzihead.fuzzitweaks.client;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GLAllocation;
+import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -48,6 +51,13 @@ public final class ThreadedScreenshot {
     private static volatile boolean resultSuccess;
     private static volatile File resultFile;
     private static volatile Exception resultException;
+
+    /**
+     * Reused capture buffers. The state machine prevents a second capture until the writer has finished with the
+     * array, so reusing them cannot race with the background PNG write.
+     */
+    private static IntBuffer pixelBuffer;
+    private static int[] pixelValues;
 
     private ThreadedScreenshot() {}
 
@@ -129,47 +139,42 @@ public final class ThreadedScreenshot {
      * write can run off the main thread while still producing compatible names.
      */
     private static File freshScreenshotFile(File shotsDir) {
-        final String base = "screenshot-" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date());
+        final String base = "screenshot-" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.ROOT).format(new Date());
         File candidate = new File(shotsDir, base + ".png");
-        for (int i = 1; candidate.exists() && i < 50; i++) {
+        for (int i = 1; candidate.exists(); i++) {
             candidate = new File(shotsDir, base + "_" + i + ".png");
         }
         return candidate;
     }
 
     /**
-     * Copies the framebuffer's colour buffer into a vertically-flipped ARGB int
-     * array. Runs on the render thread; the returned array is then safe to
+     * Copies the framebuffer's colour buffer into a vertically-flipped packed
+     * ARGB array. Runs on the render thread; the returned array is then safe to
      * consume from any thread.
      */
     private static int[] readFramebuffer(Framebuffer frameBuffer, int width, int height) {
         final int pixelCount = width * height;
-        final ByteBuffer pixels = GLAllocation.createDirectByteBuffer(pixelCount * 4);
+        if (pixelBuffer == null || pixelBuffer.capacity() < pixelCount) {
+            pixelBuffer = BufferUtils.createIntBuffer(pixelCount);
+            pixelValues = new int[pixelCount];
+        }
 
         frameBuffer.bindFramebuffer(false);
         try {
             GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
-            GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels);
+            pixelBuffer.clear();
+            GL11.glReadPixels(0, 0, width, height, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer);
         } finally {
             GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 4);
         }
 
-        // OpenGL origin is bottom-left; build the scanlines top-down so the
-        // written image is not upside down. The writer uses TYPE_INT_RGB, so
-        // the packed alpha channel is dropped like vanilla's screenshot path.
-        final int[] argb = new int[pixelCount];
-        for (int y = 0; y < height; y++) {
-            final int srcRow = (height - 1 - y) * width;
-            for (int x = 0; x < width; x++) {
-                final int src = (srcRow + x) * 4;
-                final int r = pixels.get(src) & 0xFF;
-                final int g = pixels.get(src + 1) & 0xFF;
-                final int b = pixels.get(src + 2) & 0xFF;
-                final int a = pixels.get(src + 3) & 0xFF;
-                argb[y * width + x] = (a << 24) | (r << 16) | (g << 8) | b;
-            }
-        }
-        return argb;
+        // Same packed format and row flip as vanilla's ScreenShotHelper. The
+        // writer uses TYPE_INT_RGB, so alpha is dropped like the vanilla path.
+        pixelBuffer.position(0);
+        pixelBuffer.limit(pixelCount);
+        pixelBuffer.get(pixelValues, 0, pixelCount);
+        TextureUtil.func_147953_a(pixelValues, width, height);
+        return pixelValues;
     }
 
     @SubscribeEvent

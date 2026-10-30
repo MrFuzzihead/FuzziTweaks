@@ -52,9 +52,16 @@ public abstract class EntityWaterMobSpawnMixin extends EntityCreature {
         final AxisAlignedBB search = AxisAlignedBB.getBoundingBox(posX, posY, posZ, posX, posY, posZ)
             .expand(range, range, range);
 
-        if (worldObj.getEntitiesWithinAABB(EntityPlayer.class, search)
-            .isEmpty()) {
-            cir.setReturnValue(false);
+        // Walk only the loaded players instead of scanning every entity in the 128-block cube. Testing the
+        // same AABB intersection preserves Squidless' cube semantics; getClosestPlayerToEntity uses a
+        // Euclidean radius and would reject some corner-of-the-cube spawns that Squidless allowed. The
+        // addedToChunk guard matches the chunk entity lists the old query scanned.
+        for (EntityPlayer player : worldObj.playerEntities) {
+            if (player.addedToChunk && player.boundingBox.intersectsWith(search)) {
+                return;
+            }
         }
+
+        cir.setReturnValue(false);
     }
 }

@@ -117,6 +117,9 @@ hats, no mobs wearing hats, empty selection GUI. Everything lives in the `hats` 
 | `HatDownloadBaseUrl`       | `http://dist.creeper.host` | `scheme://host` used instead of the defunct repository hosts (creeperrepo.net, redstone.tech, ...). Only the host is swapped and the path is kept, so the manifest and every hat file land on the same layout on the new host. Point it at your own mirror to stop depending on third parties; leave it blank to disable the rewrite. |
 | `PreferLocalHatMobSupport` | `true`                     | Reads the modded-mob hat placement list from `hats/HatModMobSupport.json` when that file exists, instead of a raw GitHub URL that now returns 404. A copy ships inside the Hats jar at `assets/hats/mod/HatModMobSupport.json`.                                                                                                       |
 
+`HatDownloadBaseUrl` is trimmed, stripped of trailing slashes, and validated when the config loads. A blank or
+malformed value disables the rewrite.
+
 The download walks all ~400 manifest entries one at a time, which takes several minutes on a normal
 connection; files already on disk are skipped, so relaunching resumes where it stopped. A hat that fails to
 transfer is now skipped with a one-line message and retried on the next launch, instead of aborting every
