@@ -34,24 +34,23 @@
  * For more details, see https://docs.gradle.org/8.0.1/userguide/java_library_plugin.html#sec:java_library_configurations_graph
  */
 dependencies {
-    implementation("com.github.GTNewHorizons:NotEnoughItems:2.8.93-GTNH:dev")
+    implementation("com.github.GTNewHorizons:NotEnoughItems:2.8.170-GTNH:dev")
     compileOnly(rfg.deobf("curse.maven:ProjectE-226410:2340786"))
     compileOnly(rfg.deobf("curse.maven:ThaumicAdditions-232564:2417787"))
     compileOnly("com.falsepattern:mcpatcher-mc1.7.10:0.3.0:dev")
     compileOnly(rfg.deobf("curse.maven:Artifice-223174:2248653"))
     compileOnly(rfg.deobf("curse.maven:Hats-229073:2232170"))
     // runtimeOnlyNonPublishable("curse.maven:iChunUtil-229060:2338149")
-    /*devOnlyNonPublishable("com.github.GTNewHorizons:Galacticraft:3.4.33-GTNH:dev") {
-        exclude module: "GT5-Unofficial"
-    }*/
     compileOnly("com.github.GTNewHorizons:Galacticraft:3.4.33-GTNH:dev")
     // Railcraft's CartUtils.vanillaCartItemMap is the authoritative list of cart items it replaces. Optional at
     // runtime - the mixin checks Loader.isModLoaded("Railcraft") before touching RailcraftCartCompat.
     compileOnly("com.github.GTNewHorizons:Railcraft:9.17.31:dev") { transitive = false }
     compileOnly("it.unimi.dsi:fastutil:8.5.16")
+    // Distant Horizons alpha20 is a local 1.7.10 dev build kept in libs/ for compile-only access to the DH
+    // level wrapper API; this build has no Maven coordinate for that artifact.
     compileOnly(project.files("libs/distanthorizons-alpha20-dev.jar"))
 
-    // Plain-JVM unit tests (FastTrig and friends) - no Minecraft classes involved.
+    // JUnit 5 tests; they run without launching the game.
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

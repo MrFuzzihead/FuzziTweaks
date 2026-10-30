@@ -8,6 +8,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry;
 import micdoodle8.mods.galacticraft.core.blocks.GCBlocks;
@@ -262,7 +264,7 @@ public final class GalacticraftRecipes {
      */
     private static void addOxygenTankRecipes() {
         // Drop GC's built-in compressed-aluminum light tank so the ladder is uniform.
-        removeRecipesFor(GCItems.oxTankLight);
+        removeGalacticraftLightTankRecipes();
 
         addOxygenTankRecipe(GCItems.oxTankLight, "IPI", "ICI", "III", 'I', "ingotIron");
         addOxygenTankRecipe(GCItems.oxTankMedium, "APA", "ACA", "AAA", 'A', "compressedAluminum");
@@ -272,20 +274,56 @@ public final class GalacticraftRecipes {
     }
 
     /**
-     * Removes every registered crafting recipe whose output is the given item.
-     * Used to clear GC's default compressed-aluminum light-tank recipe.
+     * Removes only Galacticraft's two built-in light-tank recipes (compressed aluminum with a
+     * tin or copper canister). Matching the exact shape and ingredients avoids deleting another
+     * mod's recipe that happens to output the same tank.
      */
-    @SuppressWarnings("unchecked")
-    private static void removeRecipesFor(Item item) {
+    private static void removeGalacticraftLightTankRecipes() {
         final List<IRecipe> recipes = CraftingManager.getInstance()
             .getRecipeList();
+        final List<ItemStack> aluminum = OreDictionary.getOres("compressedAluminum");
+
         for (int i = recipes.size() - 1; i >= 0; i--) {
             final IRecipe recipe = recipes.get(i);
-            final ItemStack output = recipe.getRecipeOutput();
-            if (output != null && output.getItem() == item) {
+            if (isGalacticraftLightTankRecipe(recipe, aluminum)) {
                 recipes.remove(i);
             }
         }
+    }
+
+    private static boolean isGalacticraftLightTankRecipe(IRecipe recipe, List<ItemStack> aluminum) {
+        if (!(recipe instanceof ShapedOreRecipe)) {
+            return false;
+        }
+
+        final ItemStack output = recipe.getRecipeOutput();
+        if (output == null || output.stackSize != 1
+            || output.getItem() != GCItems.oxTankLight
+            || output.getItemDamage() != GCItems.oxTankLight.getMaxDamage()) {
+            return false;
+        }
+
+        final Object[] input = ((ShapedOreRecipe) recipe).getInput();
+        if (input.length != 9) {
+            return false;
+        }
+
+        // GC's layout is YZY / YXY / YYY: aluminum everywhere except the oxygen pipe
+        // (top middle) and the canister (centre).
+        for (int slot = 0; slot < input.length; slot++) {
+            if (slot != 1 && slot != 4 && input[slot] != aluminum) {
+                return false;
+            }
+        }
+
+        if (!(input[1] instanceof ItemStack) || !(input[4] instanceof ItemStack)) {
+            return false;
+        }
+
+        final ItemStack pipe = (ItemStack) input[1];
+        final ItemStack canister = (ItemStack) input[4];
+        return pipe.getItem() == Item.getItemFromBlock(GCBlocks.oxygenPipe) && canister.getItem() == GCItems.canister
+            && (canister.getItemDamage() == 0 || canister.getItemDamage() == 1);
     }
 
     /**

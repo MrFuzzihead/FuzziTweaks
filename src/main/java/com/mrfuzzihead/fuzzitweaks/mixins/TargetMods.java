@@ -7,11 +7,9 @@ import com.gtnewhorizon.gtnhmixins.builders.TargetModBuilder;
 
 public enum TargetMods implements ITargetMod {
 
-    // Read the Javadoc of ITargetMod and TargetModBuilder for further information
-    // Add to this enum information about the mods you need to identify during runtime
     PROJECTE("moze_intel.projecte.PECore", "ProjectE"),
     THAUMICADDITIONS("com.pengu.thaumcraft.additions.TA", "thaumicadditions"),
-    HODGEPODGE("com.mitchej123.hodgepodge.Hodgepodge", "hodgepodge"),
+    HODGEPODGE("com.mitchej123.hodgepodge.core.HodgepodgeCore", "hodgepodge"),
     NEI("NotEnoughItems"),
     MCPATCHER("mcpatcher"),
     DISTANTHORIZONS("distanthorizons"),

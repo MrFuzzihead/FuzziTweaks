@@ -32,8 +32,14 @@ public abstract class MixinDhClientLevel extends AbstractDhLevel {
      */
     @Inject(method = "shouldDoWorldGen", at = @At("HEAD"), cancellable = true, remap = false)
     private void fuzzitweaks$filterDimension(CallbackInfoReturnable<Boolean> cir) {
-        int dimensionId = (Integer) getClientLevelWrapper().getDimensionType()
+        final Object wrappedDimension = getClientLevelWrapper().getDimensionType()
             .getWrappedMcObject();
+        // DH alpha20 exposes the dimension ID as an Integer. A future wrapper may use another Number,
+        // so leave the normal DH decision alone when the wrapped object is not numeric.
+        if (!(wrappedDimension instanceof Number)) {
+            return;
+        }
+        final int dimensionId = ((Number) wrappedDimension).intValue();
         if (DistantHorizonsDimensionFilter.isGenerationDeniedInDimension(dimensionId)) {
             cir.setReturnValue(false);
         }

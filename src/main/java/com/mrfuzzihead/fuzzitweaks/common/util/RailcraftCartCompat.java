@@ -10,8 +10,8 @@ import mods.railcraft.common.carts.CartUtils;
  * <p>
  * The minecart placement mixin is an early mixin and therefore cannot be gated on a mod ID at load time (early
  * mixins only know which coremods are present, and Railcraft is not a coremod). Keeping the Railcraft access in a
- * separate class means the mixin can check {@code Loader.isModLoaded("Railcraft")} first and only then touch this
- * class, so packs without Railcraft never try to resolve {@link CartUtils}.
+ * separate class means the mixin can check {@link RailcraftPresence} first and only then touch this class, so packs
+ * without Railcraft never try to resolve {@link CartUtils}.
  * </p>
  */
 public final class RailcraftCartCompat {

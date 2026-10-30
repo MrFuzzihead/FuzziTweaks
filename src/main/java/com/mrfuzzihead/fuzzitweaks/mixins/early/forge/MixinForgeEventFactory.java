@@ -16,8 +16,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.mrfuzzihead.fuzzitweaks.Config;
 import com.mrfuzzihead.fuzzitweaks.FuzziTweaks;
 import com.mrfuzzihead.fuzzitweaks.common.util.RailcraftCartCompat;
+import com.mrfuzzihead.fuzzitweaks.common.util.RailcraftPresence;
 
-import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.eventhandler.Event;
 
 /**
@@ -69,8 +69,9 @@ public abstract class MixinForgeEventFactory {
         }
 
         // Railcraft is optional at runtime. Keep this check in front of the helper call so packs without
-        // Railcraft never resolve any Railcraft classes from this early mixin.
-        if (!Loader.isModLoaded("Railcraft")) {
+        // Railcraft never resolve any Railcraft classes from this early mixin. The result is cached from
+        // pre-init, after every mod has registered.
+        if (!RailcraftPresence.isLoaded()) {
             return;
         }
 

@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import com.mrfuzzihead.fuzzitweaks.Config;
 import com.mrfuzzihead.fuzzitweaks.common.util.FastTrig;
 
 /**
@@ -23,6 +24,9 @@ public abstract class EntitySquidMixin {
 
     @Redirect(method = "onLivingUpdate", at = @At(value = "INVOKE", target = "Ljava/lang/Math;atan2(DD)D"))
     private double fuzziTweaks$fastAtan2(double y, double x) {
+        if (!Config.enableFastTrig) {
+            return Math.atan2(y, x);
+        }
         return FastTrig.atan2(y, x);
     }
 }

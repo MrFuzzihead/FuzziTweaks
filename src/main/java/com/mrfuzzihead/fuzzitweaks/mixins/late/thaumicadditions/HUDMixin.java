@@ -1,31 +1,32 @@
 package com.mrfuzzihead.fuzzitweaks.mixins.late.thaumicadditions;
 
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 import com.mrfuzzihead.fuzzitweaks.Config;
 import com.pengu.thaumcraft.additions.utils.hud.HUD;
 
 /**
- * Suppresses the Thaumic Additions HUD overlay.
+ * Suppresses the Thaumic Additions eating/use progress bar.
  *
  * <p>
- * Thaumic Additions draws everything from a single method,
- * {@code com.pengu.thaumcraft.additions.utils.hud.HUD#render(RenderGameOverlayEvent$Pre)},
- * which is what paints the red-to-green Adaminite/wand gauge you see at the top of the
- * screen. Cancelling at HEAD removes the visual only.
+ * Thaumic Additions renders several unrelated things from one
+ * {@code HUD#render(RenderGameOverlayEvent$Pre)} method: the Adaminite armor gauge, the
+ * green-to-red item-use bar, tip messages and {@code IHUDRenderable} extras. Cancelling the
+ * whole method at HEAD would hide all of them, so this redirects only the
+ * {@code EntityPlayer#getItemInUse()} result that gates the item-use bar. It returns {@code null}
+ * while the option is enabled, which leaves the rest of the HUD untouched.
  *
  * <p>
- * {@code remap = false} is required, not optional: the Mixin annotation processor resolves every
- * {@code @Inject} target against the game's SRG mapping file, and {@code HUD} is a Thaumic
- * Additions class rather than a Minecraft one, so it has no entry there. Without the flag the
- * build fails with "Unable to locate obfuscation mapping for @Inject target render". The method
- * name is only ever obfuscated for Minecraft classes, so skipping the remap is also the correct
- * thing to do, not just a workaround. The existing {@code KeyBindingsMixin} does the same.
+ * {@code remap = false} is required on the enclosing mixin annotation: the annotation processor
+ * resolves {@code HUD} and its {@code render} method against the game's SRG mapping file, and
+ * neither is a Minecraft class, so they have no entry there. The {@code @At.remap = true} keeps
+ * the Minecraft {@code getItemInUse} call remapped. The existing {@code KeyBindingsMixin} uses
+ * the same split for its Thaumic Additions target.
  *
  * <p>
  * The full descriptor is spelled out so the overload cannot drift, and {@code require = 0} keeps
@@ -34,21 +35,24 @@ import com.pengu.thaumcraft.additions.utils.hud.HUD;
  *
  * <p>
  * Everything else in {@code HUD} is untouched — glyph loading ({@code onTextureReload}),
- * F3 debug text ({@code addF3Info}) and tip-message lifetime ({@code clientTick}) all still
- * run, so there are no NPEs from partially-initialized state.
+ * F3 debug text ({@code addF3Info}), tip-message lifetime ({@code clientTick}) and the Adaminite
+ * gauge all still run.
  */
 @Mixin(HUD.class)
 public abstract class HUDMixin {
 
-    @Inject(
+    @Redirect(
         method = "render(Lnet/minecraftforge/client/event/RenderGameOverlayEvent$Pre;)V",
-        at = @At("HEAD"),
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/entity/player/EntityPlayer;getItemInUse()Lnet/minecraft/item/ItemStack;",
+            remap = true),
         remap = false,
-        cancellable = true,
         require = 0)
-    private void tahud$suppressOverlay(RenderGameOverlayEvent.Pre event, CallbackInfo ci) {
+    private ItemStack tahud$hideEatingGraphic(EntityPlayer player) {
         if (Config.disableThaumicAdditionsEatingGraphic) {
-            ci.cancel();
+            return null;
         }
+        return player.getItemInUse();
     }
 }

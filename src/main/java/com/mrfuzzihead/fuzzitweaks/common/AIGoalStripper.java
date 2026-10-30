@@ -1,9 +1,6 @@
 package com.mrfuzzihead.fuzzitweaks.common;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.ai.EntityAIBase;
@@ -24,9 +21,9 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
  * Ported from AI Improvements (MIT, BuiltBrokenModding/DarkCow). The original removed the goals on
  * {@code EntityJoinWorldEvent} with an {@code instanceof} check per goal; this version keeps that
  * behaviour (including modded subclasses, for example {@code EntityAIWatchClosest2}) but resolves the
- * goal matchers once at startup and bails out on the first {@code EntityJoinWorldEvent} (items, XP
+ * two option checks once at startup and bails out on the first {@code EntityJoinWorldEvent} (items, XP
  * orbs, projectiles, ...) instead of walking the task list, and it does not register a listener at all
- * when both options are disabled.
+ * when the main AI Improvements switch is disabled or both options are off.
  *
  * <p>
  * Both goals are purely visual - {@code EntityAIWatchClosest} turns the head towards the closest player,
@@ -37,30 +34,25 @@ public final class AIGoalStripper {
 
     private static final AIGoalStripper INSTANCE = new AIGoalStripper();
 
-    /**
-     * Classes whose goal instances (or subclasses, matching the original's {@code instanceof} behaviour)
-     * are removed on join. Empty while both options are disabled.
-     */
-    private static List<Class<?>> goalMatchers = Collections.emptyList();
+    /** Cached option state; both false until the module is enabled and configured. */
+    private static boolean stripWatchClosest;
+    private static boolean stripLookIdle;
 
     private AIGoalStripper() {}
 
     /**
-     * Resolves the enabled goal matchers and registers the join handler when there is something to strip.
-     * Call once during pre-init, after the config has been synchronized.
+     * Resolves the enabled option checks and registers the join handler when the main switch is on and there is
+     * something to strip. Call once during pre-init, after the config has been synchronized.
      */
     public static void register() {
-        final List<Class<?>> matchers = new ArrayList<>(2);
-        if (Config.removeLookAtPlayerGoal) {
-            matchers.add(EntityAIWatchClosest.class);
-        }
-        if (Config.removeLookIdleGoal) {
-            matchers.add(EntityAILookIdle.class);
+        if (!Config.enableAIImprovementsMain) {
+            return;
         }
 
-        goalMatchers = matchers;
+        stripWatchClosest = Config.removeLookAtPlayerGoal;
+        stripLookIdle = Config.removeLookIdleGoal;
 
-        if (!matchers.isEmpty()) {
+        if (stripWatchClosest || stripLookIdle) {
             MinecraftForge.EVENT_BUS.register(INSTANCE);
         }
     }
@@ -92,12 +84,11 @@ public final class AIGoalStripper {
                 continue;
             }
 
-            for (int i = 0; i < goalMatchers.size(); i++) {
-                if (goalMatchers.get(i)
-                    .isAssignableFrom(action.getClass())) {
-                    iterator.remove();
-                    break;
-                }
+            // instanceof keeps the original behaviour for modded subclasses (for example
+            // EntityAIWatchClosest2) while avoiding a per-task scan of a matcher list.
+            if ((stripWatchClosest && action instanceof EntityAIWatchClosest)
+                || (stripLookIdle && action instanceof EntityAILookIdle)) {
+                iterator.remove();
             }
         }
     }

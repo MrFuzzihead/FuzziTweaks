@@ -39,6 +39,10 @@ public abstract class EntityAIAttackOnCollideMixin {
 
     @Inject(method = "updateTask", at = @At("HEAD"))
     private void fuzziTweaks$tickCooldown(CallbackInfo ci) {
+        if (!Config.enableMeleeAttackRateFix) {
+            this.fuzziTweaks$attackCooldown = 0;
+            return;
+        }
         if (this.fuzziTweaks$attackCooldown > 0) {
             --this.fuzziTweaks$attackCooldown;
         }
@@ -48,7 +52,7 @@ public abstract class EntityAIAttackOnCollideMixin {
         method = "updateTask",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/EntityCreature;swingItem()V"))
     private void fuzziTweaks$maybeSwing(EntityCreature instance) {
-        if (this.fuzziTweaks$attackCooldown <= 0) {
+        if (!Config.enableMeleeAttackRateFix || this.fuzziTweaks$attackCooldown <= 0) {
             instance.swingItem();
         }
     }
@@ -59,6 +63,9 @@ public abstract class EntityAIAttackOnCollideMixin {
             value = "INVOKE",
             target = "Lnet/minecraft/entity/EntityCreature;attackEntityAsMob(Lnet/minecraft/entity/Entity;)Z"))
     private boolean fuzziTweaks$maybeAttack(EntityCreature instance, Entity target) {
+        if (!Config.enableMeleeAttackRateFix) {
+            return instance.attackEntityAsMob(target);
+        }
         if (this.fuzziTweaks$attackCooldown > 0) {
             return false;
         }

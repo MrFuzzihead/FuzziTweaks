@@ -1,10 +1,17 @@
 package com.mrfuzzihead.fuzzitweaks;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
+import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.common.config.Configuration;
 
 public class Config {
+
+    /** Canonical path of the config file that has already been loaded, if any. */
+    private static File synchronizedConfigurationFile;
 
     /** Category used for Minecraft tweak settings. */
     public static final String CATEGORY_MINECRAFT = "minecraft";
@@ -61,17 +68,29 @@ public class Config {
 
     public static boolean enableProjectETweaks = true;
 
+    /**
+     * Main switch for all Thaumic Additions mixins. Individual tweaks still have their own switches.
+     */
     public static boolean enableThaumicAdditionsTweaks = true;
 
     public static boolean disableThaumicAdditionsEatingGraphic = true;
+
+    public static boolean disableThaumicAdditionsVersionNotifier = true;
 
     public static boolean enableNEITweaks = true;
 
     public static boolean enableMCPatcherTweaks = true;
 
+    /**
+     * Main switch for all Galacticraft mixins. Individual Galacticraft tweaks still have their own switches.
+     */
+    public static boolean enableGalacticraftMain = true;
+
     public static boolean enableGalacticraftCoalGeneratorFuelTweak = true;
 
     public static boolean enableGalacticraftCompressorNEIFix = true;
+
+    public static boolean enableGalacticraftRocketNEIFix = true;
 
     public static boolean enableDistantHorizonsDimensionFilter = true;
 
@@ -93,6 +112,8 @@ public class Config {
      * new host. Rewriting the per-file URLs as well is required: the URLs inside the manifest point at
      * {@code http://cdn.redstone.tech}, which redirects to HTTPS, and {@code HttpURLConnection} does not follow
      * protocol-changing redirects. Set this to your own mirror, or leave it blank to disable the rewrite.
+     * The value is trimmed, stripped of trailing slashes, and validated when the config loads; an invalid value
+     * is treated as blank.
      */
     public static String hatsDownloadBaseUrl = "http://dist.creeper.host";
 
@@ -102,6 +123,12 @@ public class Config {
      * leaves modded mobs without hat placement data. Turning this off keeps the original online lookup.
      */
     public static boolean preferLocalHatMobSupport = true;
+
+    /**
+     * Main switch for the AI Improvements mixins, the folded Squidless mixins, and the look-goal stripper.
+     * Individual tweaks still have their own switches.
+     */
+    public static boolean enableAIImprovementsMain = true;
 
     /**
      * Replaces the hot {@code Math.atan2} calls in mob AI (head tracking via {@code EntityLookHelper},
@@ -135,7 +162,7 @@ public class Config {
 
     /**
      * Prevents squids from spawning further than {@link #squidSpawnPlayerRange} blocks from every player.
-     * Ported from the Squidless mod.
+     * Ported from the Squidless mod; loaded under the shared AI Improvements gate.
      */
     public static boolean enableSquidSpawnControl = true;
 
@@ -145,7 +172,8 @@ public class Config {
     /**
      * Maximum size of a squid spawn pack. {@code 0} keeps vanilla (4); {@code 2} is what Squidless intended but
      * never achieved, because it set {@code maxPackSize} without calling {@code setResult(ALLOW)} and Forge then
-     * discarded the value. Gates its own mixin.
+     * discarded the value. The shared AI Improvements gate loads the squid pack mixin; this value gates its
+     * handler.
      */
     public static int squidMaxPackSize = 2;
 
@@ -190,20 +218,27 @@ public class Config {
      * Keeps a mob from losing its lead to a fence post while its chunk is still being loaded. Vanilla 1.7.10
      * resolves a saved lead on the mob's first tick and drops it (as an item) if no anchor came out of that
      * single tick, which is exactly what happens when a mob is ticked before the chunk holding the fence post
-     * is resident. With this on, the anchor is looked up again for {@link #leashLoadGraceTicks} ticks and the
-     * lead is only broken once that window closes, so a mob that only lost the race keeps its lead.
+     * is resident. With this on, a saved fence-post anchor is retried for {@link #leashLoadGraceTicks} ticks
+     * while its chunk is unavailable. Once the chunk is resident, a valid fence is re-attached and a removed or
+     * replaced fence drops the lead as vanilla does. Player/entity UUID anchors and malformed or missing
+     * {@code Leash} tags are left to vanilla.
      */
     public static boolean enableLeashLoadFix = true;
 
     /**
-     * Ticks a mob restored from NBT keeps its lead for without a resolvable anchor. A mob whose fence post is
-     * there is re-attached on the first tick and is unaffected; this only bounds how long a mob whose fence
-     * really is gone keeps an unresolvable lead before the lead is dropped as normal. 0 restores vanilla's
-     * single-tick behaviour.
+     * Ticks a restored mob may keep its lead while its fence chunk is not loaded or its knot cannot yet be
+     * attached. A mob whose fence is resident and valid is re-attached on the first tick and is unaffected;
+     * this only bounds the load-order race before an unresolvable lead is dropped as normal. 0 restores
+     * vanilla's single-tick behaviour.
      */
     public static int leashLoadGraceTicks = 200;
 
-    public static int[] distantHorizonsDimensionIds = new int[] { 0 };
+    /**
+     * Dimension IDs this list applies to. The default is empty so the enabled filter preserves Distant
+     * Horizons' normal all-dimension behaviour; see {@link #distantHorizonsDimensionListIsDenylist} for how an
+     * empty list is interpreted in denylist and allowlist mode.
+     */
+    public static int[] distantHorizonsDimensionIds = new int[0];
 
     /**
      * If {@code true}, {@link #distantHorizonsDimensionIds} is treated as a denylist (every
@@ -212,14 +247,66 @@ public class Config {
      */
     public static boolean distantHorizonsDimensionListIsDenylist = true;
 
-    public static void synchronizeConfiguration(File configFile) {
-        Configuration configuration = new Configuration(configFile);
+    /**
+     * Keeps the Hats URL handling path cheap: trim the configured base once, remove the trailing slashes that
+     * would otherwise leave a double slash before the copied path, and reject values the URL parser cannot use.
+     * A malformed value is treated like a blank one, which disables rewriting and leaves the original Hats URL
+     * untouched.
+     */
+    private static String normalizeHatsDownloadBaseUrl(String configured) {
+        if (configured == null) {
+            return "";
+        }
+
+        String base = configured.trim();
+        while (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        if (base.isEmpty()) {
+            return "";
+        }
+
+        try {
+            new URL(base);
+        } catch (MalformedURLException e) {
+            return "";
+        }
+        return base;
+    }
+
+    /**
+     * Resolves the config file used by both mixin selection and runtime settings. The early/late mixin loaders
+     * call this before FML has built its pre-init event, so they pass {@code null} and use LaunchWrapper's
+     * {@code minecraftHome}. Pre-init passes FML's suggested file; canonicalising both spellings means the normal
+     * case compares equal and the file is only read once.
+     */
+    public static File resolveConfigurationFile(File suggestedFile) {
+        File file = suggestedFile != null ? suggestedFile : new File(Launch.minecraftHome, "config/fuzzitweaks.cfg");
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException e) {
+            return file.getAbsoluteFile();
+        }
+    }
+
+    /**
+     * Loads the config once per resolved path. The mixin loaders and pre-init all go through
+     * {@link #resolveConfigurationFile(File)}; repeat calls for the same file are no-ops, so the mixin gates and
+     * the runtime settings always see the same values without repeatedly parsing and saving the file.
+     */
+    public static synchronized void synchronizeConfiguration(File configFile) {
+        final File resolvedConfigFile = resolveConfigurationFile(configFile);
+        if (resolvedConfigFile.equals(synchronizedConfigurationFile)) {
+            return;
+        }
+
+        Configuration configuration = new Configuration(resolvedConfigFile);
 
         enableDespawnModule = configuration.getBoolean(
             "EnableDespawnModule",
             CATEGORY_MINECRAFT,
             true,
-            "Enable module that lets mobs holding items/armor despawn");
+            "Enable module that lets mobs holding items/armor despawn; picked-up equipment is dropped on despawn");
 
         maxMobBlockLightLevel = configuration.getInt(
             "MaxMobSpawnLightLevel",
@@ -227,7 +314,7 @@ public class Config {
             0,
             0,
             15,
-            "Highest light level that hostile mobs will spawn at (0-15), using block light");
+            "Maximum block light level at which hostile mobs can spawn (0-15). Modern Minecraft uses 0");
 
         maxMobSkyLightLevel = configuration.getInt(
             "MaxMobSkyLightLevel",
@@ -235,7 +322,8 @@ public class Config {
             7,
             0,
             15,
-            "Highest light level that hostile mobs will spawn at (0-15), using sky light");
+            "Maximum effective sky-adjusted light level for the random hostile-mob spawn check (0-15); "
+                + "7 matches modern Minecraft. Lower values make spawns rarer");
 
         enableBackgroundScreenshot = configuration.getBoolean(
             "EnableBackgroundScreenshot",
@@ -256,13 +344,28 @@ public class Config {
             "DisableThaumicAdditionsEatingGraphic",
             CATEGORY_THAUMIC_ADDITIONS,
             true,
-            "Removes the green/red gradient graphic when eating");
+            "Hides the green/red item-use progress bar while eating or using an item. The Adaminite "
+                + "gauge, tip messages and item HUD extras are left alone");
+
+        disableThaumicAdditionsVersionNotifier = configuration.getBoolean(
+            "DisableThaumicAdditionsVersionNotifier",
+            CATEGORY_THAUMIC_ADDITIONS,
+            true,
+            "Suppresses Thaumic Additions' login-time version/update chat messages (outdated, what's "
+                + "new, up to date, or no connection)");
 
         enableNEITweaks = configuration
             .getBoolean("EnableNEITweaks", CATEGORY_NEI, true, "Enable fixes and tweaks for Not Enough Items");
 
         enableMCPatcherTweaks = configuration
             .getBoolean("EnableMCPatcherTweaks", CATEGORY_MCPATCHER, true, "Enable fixes and tweaks for MCPatcher");
+
+        enableGalacticraftMain = configuration.getBoolean(
+            "EnableGalacticraftMain",
+            CATEGORY_GALACTICRAFT,
+            true,
+            "Main switch for all Galacticraft tweaks. When disabled, none of the Galacticraft mixins are applied. "
+                + "Individual Galacticraft tweaks still have their own settings below.");
 
         enableGalacticraftCoalGeneratorFuelTweak = configuration.getBoolean(
             "EnableGalacticraftCoalGeneratorFuelTweak",
@@ -277,7 +380,17 @@ public class Config {
             true,
             "Re-register GC's Ingot/Electric-Ingot Compressor NEI handlers. The GTNH Galacticraft fork comments "
                 + "these out (it expects GregTech's Implosion Compressor to show them), so the GC Compressor "
-                + "recipes never appear in NEI when GregTech isn't present.");
+                + "recipes never appear in NEI when GregTech isn't present. This does not control rocket recipes.");
+
+        enableGalacticraftRocketNEIFix = configuration.getBoolean(
+            "EnableGalacticraftRocketNEIFix",
+            CATEGORY_GALACTICRAFT,
+            // The old combined option gated both features. Inherit its value on upgrade so users who
+            // disabled it do not silently get the rocket recipes back.
+            enableGalacticraftCompressorNEIFix,
+            "Re-register GC's NASA Workbench rocket NEI handlers (Tier 1-3 and Cargo) and populate their recipe "
+                + "displays, which the GTNH fork leaves empty without its coremod. This does not control "
+                + "compressor recipes.");
 
         enableDistantHorizonsDimensionFilter = configuration.getBoolean(
             "EnableDistantHorizonsDimensionFilter",
@@ -290,7 +403,8 @@ public class Config {
             "DimensionIds",
             new int[0],
             "Dimension IDs this list applies to, see DimensionListIsDenylist. Vanilla: 0=Overworld, -1=Nether, 1=End; "
-                + "modded dimensions use their own IDs.")
+                + "modded dimensions use their own IDs. An empty list filters nothing in denylist mode and everything "
+                + "in allowlist mode.")
             .getIntList();
 
         distantHorizonsDimensionListIsDenylist = configuration.getBoolean(
@@ -320,17 +434,19 @@ public class Config {
                 + "selection GUI). The same content is still served by CreeperHost's successor CDN, see "
                 + "HatDownloadBaseUrl.");
 
-        hatsDownloadBaseUrl = configuration.getString(
-            "HatDownloadBaseUrl",
-            CATEGORY_HATS,
-            "http://dist.creeper.host",
-            "scheme://host used for Hats hat downloads. Only URLs that already point at a known Hats repository "
-                + "host (creeperrepo.net, redstone.tech, dist.creeper.host, filedist.ch) get their host swapped for "
-                + "this value and the path is kept as-is, so the manifest and every hat file land on the same "
-                + "layout on the new host. Rewriting the per-file URLs is required too: the URLs inside the "
-                + "manifest point at http://cdn.redstone.tech which redirects to HTTPS, and HttpURLConnection does "
-                + "not follow protocol-changing redirects. Point this at your own mirror to stop depending on "
-                + "third parties, or leave it blank to disable the rewrite.");
+        hatsDownloadBaseUrl = normalizeHatsDownloadBaseUrl(
+            configuration.getString(
+                "HatDownloadBaseUrl",
+                CATEGORY_HATS,
+                "http://dist.creeper.host",
+                "scheme://host used for Hats hat downloads. Only URLs that already point at a known Hats repository "
+                    + "host (creeperrepo.net, redstone.tech, dist.creeper.host, filedist.ch) get their host swapped "
+                    + "for this value and the path is kept as-is, so the manifest and every hat file land on the same "
+                    + "layout on the new host. Rewriting the per-file URLs is required too: the URLs inside the "
+                    + "manifest point at http://cdn.redstone.tech which redirects to HTTPS, and HttpURLConnection does "
+                    + "not follow protocol-changing redirects. Point this at your own mirror to stop depending on "
+                    + "third parties, or leave it blank to disable the rewrite. The value is trimmed, stripped of "
+                    + "trailing slashes, and validated when the config loads; an invalid value disables the rewrite."));
 
         preferLocalHatMobSupport = configuration.getBoolean(
             "PreferLocalHatMobSupport",
@@ -341,6 +457,15 @@ public class Config {
                 + "modded mobs without hat placement data. Turning this off keeps the original online lookup. The "
                 + "file ships inside the Hats jar at assets/hats/mod/HatModMobSupport.json, so copying it next to "
                 + "the downloaded hats is enough.");
+
+        enableAIImprovementsMain = configuration.getBoolean(
+            "EnableAIImprovementsMain",
+            CATEGORY_AI,
+            true,
+            "Main switch for all AI Improvements tweaks, including the folded Squidless spawn and pack-size "
+                + "mixins. When disabled, none of the AI mixins are applied and the look-goal removal listener is "
+                + "not registered. Individual tweaks still have their own settings below. The mixin gate is read "
+                + "at startup, so changing this requires a game restart.");
 
         enableFastTrig = configuration.getBoolean(
             "EnableFastTrig",
@@ -370,7 +495,7 @@ public class Config {
         onlyRunLookGoalsNearPlayers = configuration.getBoolean(
             "OnlyRunLookGoalsNearPlayers",
             CATEGORY_AI,
-            false,
+            true,
             "Only run the purely visual look goals (EntityAIWatchClosest and EntityAILookIdle - mobs "
                 + "turning their head towards the closest player, or towards random nearby spots) while a "
                 + "player is within LookGoalPlayerRange blocks. Further away nothing can be observed, so the "
@@ -414,10 +539,11 @@ public class Config {
             "Keep a mob from losing its lead to a fence post while its chunk is still being loaded. Vanilla "
                 + "1.7.10 resolves a saved lead on the mob's first tick after the chunk is read and drops the lead "
                 + "(spawning a lead item) when no anchor came out of that single tick, so a mob that is ticked "
-                + "before the chunk holding the fence post is resident silently loses its lead. With this on the "
-                + "anchor is looked up again for LeashLoadGraceTicks ticks and the lead is only broken once that "
-                + "window closes, and a lead knot is not killed while the chunk holding its fence post is not "
-                + "loaded. Mobs whose fence post is really gone behave exactly like vanilla.");
+                + "before the chunk holding the fence post is resident silently loses its lead. With this on, a "
+                + "saved fence-post anchor is retried for LeashLoadGraceTicks ticks while its chunk is unavailable. "
+                + "Once the chunk is resident, a valid fence is re-attached and a removed or replaced fence drops "
+                + "the lead as vanilla does. Player/entity UUID anchors and malformed or missing Leash tags are "
+                + "left to vanilla. A lead knot is also not killed while its fence chunk is not loaded.");
 
         leashLoadGraceTicks = configuration.getInt(
             "LeashLoadGraceTicks",
@@ -425,11 +551,11 @@ public class Config {
             200,
             0,
             1200,
-            "Ticks a mob restored from NBT keeps its lead for while its anchor cannot be resolved when "
-                + "EnableLeashLoadFix is on. A mob whose fence post is there is re-attached on the first tick and "
-                + "is unaffected by this; it only bounds how long a mob whose fence really is gone keeps an "
-                + "unresolvable lead before the lead is dropped as normal. 0 restores vanilla's single-tick "
-                + "behaviour. 200 is 10 seconds, far more than a chunk load needs.");
+            "Ticks a mob restored from NBT may keep its lead while its fence chunk is not loaded or its knot "
+                + "cannot yet be attached when EnableLeashLoadFix is on. A mob whose fence is resident and valid "
+                + "is re-attached on the first tick and is unaffected by this; it only bounds the load-order race "
+                + "before an unresolvable lead is dropped as normal. 0 restores vanilla's single-tick behaviour. "
+                + "200 is 10 seconds, far more than a chunk load needs.");
 
         enableSquidSpawnControl = configuration.getBoolean(
             "EnableSquidSpawnControl",
@@ -495,5 +621,6 @@ public class Config {
         if (configuration.hasChanged()) {
             configuration.save();
         }
+        synchronizedConfigurationFile = resolvedConfigFile;
     }
 }

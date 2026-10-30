@@ -29,7 +29,10 @@ public abstract class EntityLivingSquidPackMixin {
 
     @Inject(method = "getMaxSpawnedInChunk", at = @At("HEAD"), cancellable = true, require = 1)
     private void fuzziTweaks$capSquidPackSize(CallbackInfoReturnable<Integer> cir) {
-        if (Config.squidMaxPackSize > 0 && ((Object) this).getClass() == EntitySquid.class) {
+        if (Config.squidMaxPackSize <= 0) {
+            return;
+        }
+        if (((Object) this).getClass() == EntitySquid.class) {
             cir.setReturnValue(Config.squidMaxPackSize);
         }
     }

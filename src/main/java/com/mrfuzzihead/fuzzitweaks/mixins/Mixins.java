@@ -9,24 +9,25 @@ import com.mrfuzzihead.fuzzitweaks.Config;
 public enum Mixins implements IMixins {
 
     MINECRAFT(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityMobMixin", "TileEntityRendererDispatcherMixin")),
+        .addCommonMixins("EntityMobMixin")
+        .addClientMixins("TileEntityRendererDispatcherMixin")),
 
     MINECRAFTEXCLHODGEPODGE(new MixinBuilder().setPhase(Phase.EARLY)
         .addCommonMixins("EntityLivingMixin")
         .addExcludedMod(TargetMods.HODGEPODGE)
         .setApplyIf(() -> Config.enableDespawnModule)),
 
-    AI_FAST_TRIG(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityLookHelperMixin", "EntityLivingFaceEntityMixin", "EntitySquidMixin")
-        .setApplyIf(() -> Config.enableFastTrig)),
-
-    AI_LOOK_GOAL_PROXIMITY(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityAIWatchClosestMixin", "EntityAILookIdleMixin")
-        .setApplyIf(() -> Config.onlyRunLookGoalsNearPlayers)),
-
-    AI_MELEE_ATTACK_RATE(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityAIAttackOnCollideMixin")
-        .setApplyIf(() -> Config.enableMeleeAttackRateFix)),
+    AI_IMPROVEMENTS(new MixinBuilder().setPhase(Phase.EARLY)
+        .addCommonMixins(
+            "EntityLookHelperMixin",
+            "EntityLivingFaceEntityMixin",
+            "EntitySquidMixin",
+            "EntityAIWatchClosestMixin",
+            "EntityAILookIdleMixin",
+            "EntityAIAttackOnCollideMixin",
+            "EntityWaterMobSpawnMixin",
+            "EntityLivingSquidPackMixin")
+        .setApplyIf(() -> Config.enableAIImprovementsMain)),
 
     LEASH_LOAD_FIX(new MixinBuilder().setPhase(Phase.EARLY)
         .addCommonMixins("EntityLivingLeashMixin", "EntityLeashKnotMixin")
@@ -37,7 +38,7 @@ public enum Mixins implements IMixins {
         .setApplyIf(() -> Config.enableBackgroundScreenshot)),
 
     PROJECTE(new MixinBuilder().setPhase(Phase.LATE)
-        .addCommonMixins("projecte.ItemSearchHelperMixin")
+        .addClientMixins("projecte.ItemSearchHelperNEIMixin")
         .addRequiredMod(TargetMods.PROJECTE)
         .setApplyIf(() -> Config.enableProjectETweaks)),
 
@@ -66,15 +67,11 @@ public enum Mixins implements IMixins {
         .addRequiredMod(TargetMods.DISTANTHORIZONS)
         .setApplyIf(() -> Config.enableDistantHorizonsDimensionFilter)),
 
-    GALACTICRAFT_COAL_GENERATOR(new MixinBuilder().setPhase(Phase.LATE)
+    GALACTICRAFT(new MixinBuilder().setPhase(Phase.LATE)
         .addCommonMixins("galacticraft.TileEntityCoalGeneratorMixin", "galacticraft.SlotSpecificMixin")
-        .addRequiredMod(TargetMods.GALACTICRAFT)
-        .setApplyIf(() -> Config.enableGalacticraftCoalGeneratorFuelTweak)),
-
-    GALACTICRAFT_NEI_HANDLERS(new MixinBuilder().setPhase(Phase.LATE)
         .addClientMixins("galacticraft.NEIGalacticraftConfigMixin")
         .addRequiredMod(TargetMods.GALACTICRAFT)
-        .setApplyIf(() -> Config.enableGalacticraftCompressorNEIFix)),
+        .setApplyIf(() -> Config.enableGalacticraftMain)),
 
     ARTIFICE(new MixinBuilder().setPhase(Phase.LATE)
         .addCommonMixins("artifice.ArtificeEnchantsMixin")
@@ -86,20 +83,12 @@ public enum Mixins implements IMixins {
         .addRequiredMod(TargetMods.HATS)
         .setApplyIf(() -> Config.enableHatsEndpointFix)),
 
-    SQUID_SPAWN_CONTROL(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityWaterMobSpawnMixin")
-        .setApplyIf(() -> Config.enableSquidSpawnControl)),
-
-    SQUID_PACK_SIZE(new MixinBuilder().setPhase(Phase.EARLY)
-        .addCommonMixins("EntityLivingSquidPackMixin")
-        .setApplyIf(() -> Config.squidMaxPackSize > 0)),
-
     TILEENTITY_RESET_FIX(new MixinBuilder().setPhase(Phase.EARLY)
         .addCommonMixins("forge.ForgeChunkManagerMixin")
         .setApplyIf(() -> Config.enableTileEntityResetFix)),
 
     // Railcraft is not a coremod, so an early mixin cannot be gated on its mod ID at load time. The mixin
-    // itself no-ops when Loader.isModLoaded("Railcraft") is false, and RailcraftCartCompat keeps the
+    // itself no-ops when RailcraftPresence reports the mod absent, and RailcraftCartCompat keeps the
     // Railcraft class reference out of the mixin until that check has passed. The mixin also loads in
     // logging-only mode so the deny can be disabled while the event traces are still collected.
     RAILCRAFT_MINECART_FIX(new MixinBuilder().setPhase(Phase.EARLY)

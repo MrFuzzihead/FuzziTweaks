@@ -20,6 +20,7 @@ Everything lives in the `ai` section of `config/fuzzitweaks.cfg`:
 
 | Option                        | Default | What it does                                                                                                                                                                                                                                                                                                                                        |
 |-------------------------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableAIImprovementsMain`    | `true`  | Main switch for all AI Improvements tweaks, including the folded Squidless spawn and pack-size mixins. When disabled, none of the AI mixins are applied and the look-goal removal listener is not registered. Read at startup; restart after changing it.                                                                               |
 | `EnableFastTrig`              | `true`  | Replaces the hot `Math.atan2` calls in mob AI (head tracking in `EntityLookHelper`, `EntityLiving.faceEntity` for legacy-AI mobs such as spiders, endermen and zombie pigmen, and squid swimming) with a lookup table (`FastTrig`). Off by less than a degree, so visually identical, and cheaper with lots of entities.                            |
 | `RemoveLookAtPlayerGoal`      | `false` | Removes the `EntityAIWatchClosest` goal (mobs turning their head towards the closest player) from every mob, modded subclasses such as `EntityAIWatchClosest2` included. Visual only, but it also disables head tracking.                                                                                                                           |
 | `RemoveLookIdleGoal`          | `false` | Removes the `EntityAILookIdle` goal (mobs looking at random nearby spots) from every mob. Visual only, but it also disables idle head movement.                                                                                                                                                                                                     |
@@ -31,6 +32,32 @@ Everything lives in the `ai` section of `config/fuzzitweaks.cfg`:
 **Balance note:** the melee fix is on by default and matches Minecraft 1.8 and later, so hostile mobs
 deal roughly half the melee damage they do in unpatched 1.7.10 (the bugged behavior lets them hit about
 twice as often as intended). Set `EnableMeleeAttackRateFix=false` to keep the old, buggy rate.
+
+### Despawn module and background screenshots
+
+These vanilla-facing tweaks live in the `minecraft` section of `config/fuzzitweaks.cfg`:
+
+| Option                       | Default | What it does                                                                                                                                                                                                                                                                                                                       |
+|------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableDespawnModule`        | `true`  | Lets mobs that picked up equipment despawn again. Vanilla marks any successful item/armor pickup as persistent, so such mobs never despawn; this suppresses only that pickup-driven persistence. When one of those mobs does despawn, the picked-up equipment is dropped instead of deleted. Name-tag/NBT persistence and naturally spawned equipment are untouched. The module is skipped when Hodgepodge is installed, because Hodgepodge already handles this case. |
+| `EnableBackgroundScreenshot` | `true`  | Takes framebuffer F2 screenshots off the main thread. Pixels are copied on the render thread, then PNG compression and disk I/O run on a daemon writer thread so the game does not freeze while saving. With the framebuffer disabled (or this option off) the vanilla synchronous screenshot path is used. Screenshots use vanilla's timestamped naming and only one capture is allowed at a time. |
+
+Both gates are read at startup, so restart the game after changing them.
+
+### Mob spawn light levels
+
+Hostile mobs use modern Java Edition's light rules instead of 1.7.10's block-light-7 check. The raw
+stored sky-light gate and the thunder-time brightness adjustment are preserved from modern Minecraft.
+Everything lives in the `minecraft` section of `config/fuzzitweaks.cfg`:
+
+| Option                   | Default | What it does                                                                                                                                                                                                                   |
+|--------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `MaxMobSpawnLightLevel`  | `0`     | Hard maximum block light level at which hostile mobs can spawn (0-15). `0` matches modern Minecraft in the Overworld.                                                                                                           |
+| `MaxMobSkyLightLevel`    | `7`     | Maximum effective sky-adjusted light level accepted by the random darkness check (0-15). `7` matches modern Minecraft; lower values make spawn attempts rarer. The separate stored sky-light check remains modern's random gate. |
+
+As in modern Minecraft, the final sky-adjusted check is probabilistic: a lower light value passes more
+often than one close to the configured maximum, so `MaxMobSkyLightLevel` is a threshold, not a guarantee
+that every block at or below it will spawn a mob.
 
 ### Leads
 
@@ -47,12 +74,95 @@ section of `config/fuzzitweaks.cfg`:
 
 | Option                  | Default | What it does                                                                                                                                                                                                                                                                                              |
 |-------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `EnableLeashLoadFix`    | `true`  | Remembers a restored mob's anchor past the single tick vanilla gives it, retries the anchor lookup every tick, and holds `clearLeashed` off while a lost anchor is still being chased. Also stops a lead knot from killing itself while the chunk holding its fence post is not loaded, and writes the remembered anchor back to the mob's NBT so the unrecoverable `Leashed:true`-with-no-`Leash` state never reaches disk. |
-| `LeashLoadGraceTicks`   | `200`   | How long (in ticks) a restored mob keeps its lead while its anchor cannot be resolved. A mob whose fence post is there is re-attached on the first tick and is unaffected; this only bounds how long a mob whose fence really is gone keeps an unresolvable lead before the lead drops as normal. 0 restores vanilla's single-tick behaviour. |
+| `EnableLeashLoadFix`    | `true`  | Remembers a restored mob's saved fence-post anchor past the single tick vanilla gives it and holds `clearLeashed` off while the fence's chunk is not loaded. A resident, valid fence is re-attached immediately; a resident chunk whose block is no longer leashable is treated as a real removal and dropped as vanilla does. Only the `X/Y/Z` fence form is tracked: player/entity UUID anchors and malformed or missing `Leash` tags keep vanilla behaviour. Also stops a lead knot from killing itself while the chunk holding its fence post is not loaded, and writes the remembered anchor back to NBT while the decision is still pending. |
+| `LeashLoadGraceTicks`   | `200`   | How long (in ticks) a restored mob may keep its lead while its fence chunk is not loaded or its knot cannot yet be attached. A mob whose fence is resident and valid is re-attached on the first tick and is unaffected; this only bounds the load-order race and drops an unresolvable lead as normal once the window closes. 0 restores vanilla's single-tick behaviour. |
 
-Only a mob whose anchor is *gone or dead* is ever deferred, so a player taking a lead off by hand and a mob
-that simply wandered more than 10 blocks out of range both keep vanilla's behaviour and this cannot be used to
-farm lead items.
+Only a restored mob with a saved fence-post anchor and an unloaded/unresolved fence is ever deferred. A player
+taking a lead off by hand, a player/entity UUID anchor, malformed NBT, and a fence known to have been removed
+all keep vanilla behaviour, so this cannot be used to farm lead items or undo a player breaking a knot.
+
+### ProjectE
+
+ProjectE's transmutation search selects its NEI helper when NEI is installed, but that helper builds a filter from
+NEI's deprecated `SearchField.searchProviders` list. GTNH's NEI no longer populates that list, so every ProjectE
+search matched every item. FuzziTweaks redirects the helper to NEI's parser-backed `SearchField.getFilter`, restoring
+NEI search syntax such as `@mod`, `$ore`, regex, negation and quoting for ProjectE's transmutation search. The
+integration is client-only. On an older NEI without that method it falls back to ProjectE's original behaviour.
+Everything lives in the `projecte` section of `config/fuzzitweaks.cfg`:
+
+| Option                 | Default | What it does                                                                                                                        |
+|------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableProjectETweaks` | `true`  | Restores NEI syntax in ProjectE's transmutation search. Disable it to leave ProjectE's own search helper untouched.                 |
+
+### Not Enough Items
+
+FuzziTweaks' NEI tweak makes the world mob-spawn overlay use the same configured block-light and sky-light
+thresholds as its hostile-mob spawn rules (`MaxMobSpawnLightLevel` and `MaxMobSkyLightLevel`). The collision,
+liquid and overlay-mode checks are unchanged. Disabling the option leaves NEI's original fixed thresholds in place.
+Galacticraft's NEI recipe-handler fixes have their own options in the Galacticraft section below. Everything lives
+in the `nei` section of `config/fuzzitweaks.cfg`:
+
+| Option              | Default | What it does                                                                                                                                 |
+|---------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableNEITweaks`   | `true`  | Makes NEI's mob-spawn overlay agree with FuzziTweaks' spawn-light settings. Disable it to use NEI's unmodified overlay.                       |
+
+### MCPatcher
+
+MCPatcher's mob texture lookup used to run resource-pack I/O on the render thread the first time each texture was
+seen, which could stall rendering for several frames. FuzziTweaks performs those scans on a single low-priority
+daemon worker and returns the original texture until a result is ready. Results, including "no variants" and scan
+failures, are cached; failed or absent scans are retried after a resource reload. There is no visual change. The
+tweak only loads when MCPatcher is present and lives in the `mcpatcher` section of `config/fuzzitweaks.cfg`:
+
+| Option                  | Default | What it does                                                                                                                              |
+|-------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableMCPatcherTweaks` | `true`  | Moves MCPatcher's mob-texture resource scans off the render thread. Disable it to use MCPatcher's original blocking lookup.                |
+
+### Thaumic Additions
+
+Thaumic Additions tweaks share one late mixin gate, so nothing is loaded unless Thaumic Additions is
+present. Everything lives in the `thaumicadditions` section of `config/fuzzitweaks.cfg`:
+
+| Option                                      | Default | What it does                                                                                                                                                                                                                   |
+|---------------------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableThaumicAdditionsTweaks`              | `true`  | Main switch for all Thaumic Additions mixins. When disabled, none of the mixins below are applied; the individual switches still have their own settings. Read at startup, so restart after changing it.                        |
+| `DisableThaumicAdditionsEatingGraphic`      | `true`  | Hides the green/red item-use progress bar while eating or using an item. The Adaminite armor gauge, tip messages and `IHUDRenderable` item extras remain visible.                                                               |
+| `DisableThaumicAdditionsVersionNotifier`    | `true`  | Suppresses Thaumic Additions' login-time version messages (outdated, what's-new, up to date, or no connection). This is unrelated to the HUD; the mod's `KeyBindings.onTick` is the version notifier despite its class name. |
+
+The two individual options are checked inside their mixins, so they can be changed without touching the
+main startup gate.
+
+### Artifice
+
+Artifice registers its three enchantments by probing IDs upwards and relying on the vanilla `Enchantment`
+constructor to throw when an ID is taken. An ID-conflict detector replaces that constructor with a hook that records
+the collision instead of throwing, so Artifice's probes all succeed at the same first free ID and overwrite each
+other. FuzziTweaks assigns a verified-free ID to each enabled Artifice enchantment before constructing it. In a
+clean, unpatched environment the chosen IDs are the same as Artifice's original probe, so existing worlds are
+unaffected. Everything lives in the `artifice` section of `config/fuzzitweaks.cfg`:
+
+| Option                       | Default | What it does                                                                                                                                                         |
+|------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableArtificeEnchantIdFix` | `true`  | Gives Artifice's invisible, soul-stealing and resistance enchantments distinct free IDs when an ID-conflict detector suppresses the constructor's duplicate check. Disable it to leave Artifice's original registration alone. |
+
+### Distant Horizons
+
+FuzziTweaks can stop Distant Horizons from generating LOD data in selected dimensions. It only stops future
+generation: LOD data that already exists on disk is left there and keeps rendering. The server-side mixin
+covers dedicated servers and singleplayer, while the client-side mixin stops a client from requesting
+generation from a remote Distant Horizons server. All settings are read at startup, so restart after changing
+them. Everything lives in the `distanthorizons` section of `config/fuzzitweaks.cfg`:
+
+| Option                                   | Default | What it does                                                                                                                                                                                                                                      |
+|------------------------------------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableDistantHorizonsDimensionFilter`   | `true`  | Applies the per-dimension generate/deny list. Disabling it applies neither the server-side nor the client-side mixin.                                                                                                                              |
+| `DimensionIds`                           | empty   | Dimension IDs the list applies to. `0` is the Overworld, `-1` the Nether, `1` the End; modded dimensions use their own IDs. Forge writes the generated list with one ID per line.                                                                   |
+| `DimensionListIsDenylist`                | `true`  | If enabled, `DimensionIds` is a denylist and LODs are generated everywhere except those dimensions. If disabled, it is an allowlist and LODs are generated only in those dimensions.                                                              |
+
+The filter is enabled by default, but the default `DimensionIds` list is empty, so a fresh install does not
+change Distant Horizons' normal behaviour. In denylist mode an empty list filters nothing; in allowlist mode
+an empty list filters every dimension. For example, add `-1` to `DimensionIds` to stop Nether LOD generation,
+or set `DimensionListIsDenylist=false` with only `0` in `DimensionIds` to generate Overworld LODs only.
 
 ### Hats
 
@@ -68,6 +178,9 @@ hats, no mobs wearing hats, empty selection GUI. Everything lives in the `hats` 
 | `HatDownloadBaseUrl`       | `http://dist.creeper.host` | `scheme://host` used instead of the defunct repository hosts (creeperrepo.net, redstone.tech, ...). Only the host is swapped and the path is kept, so the manifest and every hat file land on the same layout on the new host. Point it at your own mirror to stop depending on third parties; leave it blank to disable the rewrite. |
 | `PreferLocalHatMobSupport` | `true`                     | Reads the modded-mob hat placement list from `hats/HatModMobSupport.json` when that file exists, instead of a raw GitHub URL that now returns 404. A copy ships inside the Hats jar at `assets/hats/mod/HatModMobSupport.json`.                                                                                                       |
 
+`HatDownloadBaseUrl` is trimmed, stripped of trailing slashes, and validated when the config loads. A blank or
+malformed value disables the rewrite.
+
 The download walks all ~400 manifest entries one at a time, which takes several minutes on a normal
 connection; files already on disk are skipped, so relaunching resumes where it stopped. A hat that fails to
 transfer is now skipped with a one-line message and retried on the next launch, instead of aborting every
@@ -75,6 +188,22 @@ remaining entry in the manifest the way the unpatched mod does.
 
 The hats themselves are third-party content served by whoever runs the mirror. A pack that has to build
 offline should ship the downloaded `hats/` folder in the pack rather than rely on the download at runtime.
+
+### Galacticraft
+
+Galacticraft tweaks all share a late mixin gate, so they are only loaded when Galacticraft is present. Everything
+lives in the `galacticraft` section of `config/fuzzitweaks.cfg`:
+
+| Option                                        | Default | What it does                                                                                                                                                                                                                                                                                                                       |
+|-----------------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableGalacticraftMain`                      | `true`  | Main switch for all Galacticraft mixins. When disabled, none of the mixins below are applied; the individual switches still have their own settings.                                                                                                                                                                               |
+| `EnableGalacticraftCoalGeneratorFuelTweak`    | `true`  | Lets the Coal Generator burn any furnace-burnable item (charcoal, wood, mod fuels, ...) instead of only coal and coal blocks, scaled to each item's vanilla furnace burn time at Galacticraft's 1/5 rate. The GUI slot, hoppers/pipes and the tile's `isItemValidForSlot` all accept the wider fuel set. Container fuels such as lava buckets leave their empty container behind. |
+| `EnableGalacticraftCompressorNEIFix`          | `true`  | Re-registers Galacticraft's Ingot/Electric-Ingot Compressor NEI handlers, which the GTNH fork leaves to GregTech. Disabling it leaves the rocket NEI displays enabled.                                                                                                                                                               |
+| `EnableGalacticraftRocketNEIFix`              | `true`  | Re-registers Galacticraft's NASA Workbench rocket NEI handlers (Tier 1-3 and Cargo) and fills their recipe displays, which the GTNH fork leaves to GregTech. Disabling it leaves the compressor NEI handlers enabled.                                                                                                                |
+
+On a fresh config both NEI options default to `true`. On upgrade, the new rocket key inherits the old combined
+`EnableGalacticraftCompressorNEIFix` value when it is missing, so a previously disabled combined option does not
+re-enable the rocket recipes.
 
 ### Squid spawns
 
@@ -88,6 +217,9 @@ squids used to appear, and can cap how many squids spawn together. Everything li
 | `EnableSquidSpawnControl` | `true`  | Denies a squid spawn when no player is within `SquidSpawnPlayerRange` blocks. Only the exact `EntitySquid` class is affected, so modded water mobs and squid subclasses are untouched.                                                                                                                                                                              |
 | `SquidSpawnPlayerRange`   | `64`    | Distance in blocks a player must be within for squids to spawn (Squidless used 64).                                                                                                                                                                                                                                                                               |
 | `SquidMaxPackSize`        | `2`     | Maximum squid pack size. `0` keeps vanilla (4). Squidless set `LivingPackSizeEvent.maxPackSize = 2` but never called `setResult(ALLOW)`, so Forge discarded the value and vanilla's 4 was always used - this port returns the value directly, so 2 now takes effect for the first time. Set it to `0` if you prefer vanilla pack sizes.                       |
+
+The squid mixins are loaded under the shared `EnableAIImprovementsMain` gate (see AI Improvements); the options
+above still control their individual behaviour.
 
 Squidless shipped no license file (its upstream repository has none either), so this is a clean-room
 reimplementation from its observed/decompiled behaviour rather than a copy of its code.
@@ -112,15 +244,17 @@ behaviour.
 
 The [Careful Cast Corrector](https://github.com/Chocohead/Careful-Cast-Corrector) mod is folded into FuzziTweaks.
 Vanilla casts the result of `World.getTileEntity` straight to `TileEntityChest` in
-`BlockChest.onNeighborBlockChange` and to `TileEntityChest` / `TileEntityMobSpawner` in
-`WorldGenDungeons.generate`. A mod that puts its own tile entity at one of those positions makes the cast throw
-`ClassCastException`. Instead of rewriting the casts, the lookups are redirected to return `null` for a foreign
-tile entity, so the existing null checks simply skip the affected step - the same effective behaviour as CCC
-with no extension handler registered. It lives in the `carefulcast` section of `config/fuzzitweaks.cfg`:
+`BlockChest.onNeighborBlockChange` and `BlockChest.breakBlock`, and to `TileEntityChest` /
+`TileEntityMobSpawner` in `WorldGenDungeons.generate`. A mod that puts its own tile entity at one of those
+positions makes the cast throw `ClassCastException`. Instead of rewriting the casts, the lookups are
+redirected to return `null` for a foreign tile entity, so the existing null checks simply skip the affected
+step - the same effective behaviour as CCC with no extension handler registered. CCC 2.0 itself only patches
+`onNeighborBlockChange` in `BlockChest`; FuzziTweaks also covers `breakBlock` with the same guard. It lives in
+the `carefulcast` section of `config/fuzzitweaks.cfg`:
 
 | Option                       | Default | What it does                                                                                                                              |
 |------------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| `EnableCarefulCastCorrector` | `true`  | Skips the vanilla chest/dungeon tile entity step instead of throwing when another mod has replaced the tile entity. Chests and dungeons behave normally otherwise. |
+| `EnableCarefulCastCorrector` | `true`  | Skips the vanilla chest/dungeon tile entity step instead of throwing when another mod has replaced the tile entity. Chest neighbour updates, chest breaking, and dungeon chest/spawner setup behave normally otherwise. |
 
 CCC's extension API (`CarefullyCastChestContentFillers` / `CarefullyCastMobSpawnerSetters`) is intentionally not
 ported; nothing in the pack registers a handler. Careful Cast Corrector ships no license file, so this is a
