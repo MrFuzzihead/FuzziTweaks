@@ -3,13 +3,16 @@ package com.mrfuzzihead.fuzzitweaks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.mrfuzzihead.fuzzitweaks.commands.CommandFuzziTweaks;
 import com.mrfuzzihead.fuzzitweaks.common.GalacticraftRecipes;
+import com.mrfuzzihead.fuzzitweaks.common.chunkpurge.ChunkPurge;
 
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 @Mod(
     modid = FuzziTweaks.MODID,
@@ -33,6 +36,12 @@ public class FuzziTweaks {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         proxy.preInit(event);
+    }
+
+    @Mod.EventHandler
+    public void serverStarting(FMLServerStartingEvent event) {
+        ChunkPurge.register();
+        event.registerServerCommand(new CommandFuzziTweaks());
     }
 
     @Mod.EventHandler

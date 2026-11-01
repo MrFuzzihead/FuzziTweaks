@@ -53,6 +53,18 @@ class ConfigTest {
         assertTrue(Config.enableJumpClimbing);
         assertTrue(Config.enableChatLinebreakFix);
         assertTrue(Config.onlyRunLookGoalsNearPlayers);
+        assertEquals(Config.ChunkPurgeMode.REPORT, Config.chunkPurgeMode);
+        assertEquals(600, Config.chunkPurgeIntervalTicks);
+        assertEquals(5, Config.chunkPurgePlayerMargin);
+        assertEquals(5, Config.chunkPurgeTicketMargin);
+        assertEquals(3, Config.chunkPurgeSpawnMargin);
+        assertTrue(Config.chunkPurgeProtectSpawn);
+        assertArrayEquals(new int[] { 0 }, Config.chunkPurgeDimensions);
+        assertEquals(0, Config.chunkPurgePlayerProtectionRadius);
+        assertEquals(0, Config.chunkPurgeMaxPerRun);
+        assertEquals(8, Config.chunkPurgeReportSampleSize);
+        assertFalse(Config.chunkPurgeProcessEmptyDimensions);
+        assertFalse(Config.chunkPurgeDebug);
         assertEquals(0, Config.maxMobBlockLightLevel);
         assertEquals(7, Config.maxMobSkyLightLevel);
         assertArrayEquals(new int[0], Config.distantHorizonsDimensionIds);
@@ -79,6 +91,23 @@ class ConfigTest {
                 "    B:EnableSortedEnchantments=false",
                 "    B:EnableJumpClimbing=false",
                 "    B:EnableChatLinebreakFix=false",
+                "}",
+                "chunkpurge {",
+                "    S:Mode=PURGE",
+                "    I:IntervalTicks=1200",
+                "    I:PlayerMargin=0",
+                "    I:TicketMargin=1",
+                "    I:SpawnMargin=2",
+                "    B:ProtectSpawn=false",
+                "    I:Dimensions <",
+                "        0",
+                "        -1",
+                "    >",
+                "    I:PlayerProtectionRadius=20",
+                "    I:MaxPerRun=100",
+                "    I:ReportSampleSize=0",
+                "    B:ProcessEmptyDimensions=true",
+                "    B:Debug=true",
                 "}"),
             StandardCharsets.UTF_8);
 
@@ -93,6 +122,43 @@ class ConfigTest {
         assertFalse(Config.enableJumpClimbing);
         assertFalse(Config.enableChatLinebreakFix);
         assertFalse(Config.onlyRunLookGoalsNearPlayers);
+        assertEquals(Config.ChunkPurgeMode.PURGE, Config.chunkPurgeMode);
+        assertEquals(1200, Config.chunkPurgeIntervalTicks);
+        assertEquals(0, Config.chunkPurgePlayerMargin);
+        assertEquals(1, Config.chunkPurgeTicketMargin);
+        assertEquals(2, Config.chunkPurgeSpawnMargin);
+        assertFalse(Config.chunkPurgeProtectSpawn);
+        assertArrayEquals(new int[] { 0, -1 }, Config.chunkPurgeDimensions);
+        assertEquals(20, Config.chunkPurgePlayerProtectionRadius);
+        assertEquals(100, Config.chunkPurgeMaxPerRun);
+        assertEquals(0, Config.chunkPurgeReportSampleSize);
+        assertTrue(Config.chunkPurgeProcessEmptyDimensions);
+        assertTrue(Config.chunkPurgeDebug);
+    }
+
+    @Test
+    void invalidChunkPurgeModeFallsBackToReport(@TempDir Path tempDir) throws IOException {
+        final Path file = tempDir.resolve("bad-mode.cfg");
+        Files.write(file, Arrays.asList("chunkpurge {", "    S:Mode=NOT_A_MODE", "}"), StandardCharsets.UTF_8);
+
+        Config.synchronizeConfiguration(file.toFile());
+
+        assertEquals(Config.ChunkPurgeMode.REPORT, Config.chunkPurgeMode);
+    }
+
+    @Test
+    void reloadRereadsTheCurrentConfigFile(@TempDir Path tempDir) throws IOException {
+        final Path file = tempDir.resolve("reload.cfg");
+        Files.write(file, Arrays.asList("chunkpurge {", "    S:Mode=REPORT", "}"), StandardCharsets.UTF_8);
+        Config.synchronizeConfiguration(file.toFile());
+        assertEquals(Config.ChunkPurgeMode.REPORT, Config.chunkPurgeMode);
+
+        Files.write(file, Arrays.asList("chunkpurge {", "    S:Mode=PURGE", "}"), StandardCharsets.UTF_8);
+        Config.synchronizeConfiguration(file.toFile());
+        assertEquals(Config.ChunkPurgeMode.REPORT, Config.chunkPurgeMode);
+
+        Config.reload();
+        assertEquals(Config.ChunkPurgeMode.PURGE, Config.chunkPurgeMode);
     }
 
     @Test
