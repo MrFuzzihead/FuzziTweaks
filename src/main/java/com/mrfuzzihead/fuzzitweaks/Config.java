@@ -19,6 +19,9 @@ public class Config {
     /** Category used for general quality-of-life tweaks ported from LegacyFixes. */
     public static final String CATEGORY_QOL = "qol";
 
+    /** Category used for the chunk purge and its diagnostics. */
+    public static final String CATEGORY_CHUNKPURGE = "chunkpurge";
+
     /** Category used for the Distant Horizons per-dimension LOD generation filter settings. */
     public static final String CATEGORY_DISTANT_HORIZONS = "distanthorizons";
 
@@ -103,6 +106,56 @@ public class Config {
      * click/hover events and raw section-sign formatting. Client-only.
      */
     public static boolean enableChatLinebreakFix = true;
+
+    /** Chunk purge behaviour. REPORT is the default so servers can gather diagnostics without unloading anything. */
+    public enum ChunkPurgeMode {
+        OFF,
+        REPORT,
+        PURGE
+    }
+
+    /**
+     * Diagnostics versus action. REPORT scans and logs unloadable chunks only; PURGE also queues them through the
+     * normal {@code ChunkProviderServer} unload path. Defaults to REPORT.
+     */
+    public static ChunkPurgeMode chunkPurgeMode = ChunkPurgeMode.REPORT;
+
+    /** Ticks between chunk purge scans. */
+    public static int chunkPurgeIntervalTicks = 600;
+
+    /** Extra chunks beyond the server view distance to protect around each player. */
+    public static int chunkPurgePlayerMargin = 5;
+
+    /** Extra chunks around each Forge chunk-loading ticket to protect. */
+    public static int chunkPurgeTicketMargin = 5;
+
+    /** Extra chunks beyond the vanilla 8-chunk spawn area to protect. */
+    public static int chunkPurgeSpawnMargin = 3;
+
+    /** Whether loaded spawn chunks are protected when the dimension keeps spawn loaded. */
+    public static boolean chunkPurgeProtectSpawn = true;
+
+    /** Dimension IDs the module scans. Defaults to the Overworld only. */
+    public static int[] chunkPurgeDimensions = new int[] { 0 };
+
+    /**
+     * Absolute player protection radius in chunks. 0 uses the server view distance plus {@link
+     * #chunkPurgePlayerMargin}; a positive value overrides both, for packs whose mods load a larger radius around
+     * players than the vanilla view distance.
+     */
+    public static int chunkPurgePlayerProtectionRadius = 0;
+
+    /** Maximum chunks queued per PURGE scan; 0 means unlimited. */
+    public static int chunkPurgeMaxPerRun = 0;
+
+    /** Number of chunk coordinates included in a REPORT log line; 0 disables the sample. */
+    public static int chunkPurgeReportSampleSize = 8;
+
+    /** Whether dimensions with no players online are scanned. Off by default to avoid noisy false positives. */
+    public static boolean chunkPurgeProcessEmptyDimensions = false;
+
+    /** Log scan details even when no unloadable chunks are found. */
+    public static boolean chunkPurgeDebug = false;
 
     public static int maxMobBlockLightLevel = 0;
 
@@ -422,6 +475,99 @@ public class Config {
                 + "styles, click/hover events and raw section-sign formatting. Client-only. Updatable chat lines "
                 + "(nonzero line id) are left to vanilla.");
 
+        chunkPurgeMode = parseChunkPurgeMode(
+            configuration.getString(
+                "Mode",
+                CATEGORY_CHUNKPURGE,
+                "REPORT",
+                "OFF, REPORT, or PURGE. REPORT only scans and logs unloadable chunks; PURGE also queues them "
+                    + "through the normal ChunkProviderServer unload path. The default REPORT is diagnostic-only."));
+
+        chunkPurgeIntervalTicks = configuration.getInt(
+            "IntervalTicks",
+            CATEGORY_CHUNKPURGE,
+            600,
+            20,
+            72000,
+            "Ticks between chunk purge scans (600 = 30 seconds).");
+
+        chunkPurgePlayerMargin = configuration.getInt(
+            "PlayerMargin",
+            CATEGORY_CHUNKPURGE,
+            5,
+            0,
+            64,
+            "Extra chunks beyond the server view distance to protect around each player.");
+
+        chunkPurgeTicketMargin = configuration.getInt(
+            "TicketMargin",
+            CATEGORY_CHUNKPURGE,
+            5,
+            0,
+            64,
+            "Extra chunks around each Forge chunk-loading ticket to protect.");
+
+        chunkPurgeSpawnMargin = configuration.getInt(
+            "SpawnMargin",
+            CATEGORY_CHUNKPURGE,
+            3,
+            0,
+            64,
+            "Extra chunks beyond the vanilla 8-chunk spawn area to protect.");
+
+        chunkPurgeProtectSpawn = configuration.getBoolean(
+            "ProtectSpawn",
+            CATEGORY_CHUNKPURGE,
+            true,
+            "Protect loaded spawn chunks in dimensions where spawn is kept loaded.");
+
+        chunkPurgeDimensions = configuration
+            .get(
+                CATEGORY_CHUNKPURGE,
+                "Dimensions",
+                new int[] { 0 },
+                "Dimension IDs to scan. The default is the Overworld only; add mining ages, the Nether or the End "
+                    + "deliberately.")
+            .getIntList();
+
+        chunkPurgePlayerProtectionRadius = configuration.getInt(
+            "PlayerProtectionRadius",
+            CATEGORY_CHUNKPURGE,
+            0,
+            0,
+            256,
+            "Absolute player protection radius in chunks. 0 uses the server view distance plus PlayerMargin; set "
+                + "this when a mod loads a larger radius around players than the vanilla view distance.");
+
+        chunkPurgeMaxPerRun = configuration.getInt(
+            "MaxPerRun",
+            CATEGORY_CHUNKPURGE,
+            0,
+            0,
+            1000000,
+            "Maximum chunks to queue per PURGE scan. 0 means unlimited.");
+
+        chunkPurgeReportSampleSize = configuration.getInt(
+            "ReportSampleSize",
+            CATEGORY_CHUNKPURGE,
+            8,
+            0,
+            64,
+            "Number of chunk coordinates included in a REPORT log line. 0 disables the sample.");
+
+        chunkPurgeProcessEmptyDimensions = configuration.getBoolean(
+            "ProcessEmptyDimensions",
+            CATEGORY_CHUNKPURGE,
+            false,
+            "Scan dimensions with no players online. Leave this false for safety: with no players most "
+                + "non-spawn chunks are legitimately idle and would produce noisy reports.");
+
+        chunkPurgeDebug = configuration.getBoolean(
+            "Debug",
+            CATEGORY_CHUNKPURGE,
+            false,
+            "Log scan details even when no unloadable chunks are found.");
+
         enableProjectETweaks = configuration
             .getBoolean("EnableProjectETweaks", CATEGORY_PROJECTE, true, "Enable fixes and tweaks for ProjectE");
 
@@ -713,5 +859,27 @@ public class Config {
             configuration.save();
         }
         synchronizedConfigurationFile = resolvedConfigFile;
+    }
+
+    /**
+     * Forces a re-read of the same config file. Used by the runtime commands; the mixin gates themselves are applied
+     * at startup, but runtime settings such as the chunk purge mode can change without restarting.
+     */
+    public static synchronized void reload() {
+        final File file = synchronizedConfigurationFile;
+        synchronizedConfigurationFile = null;
+        synchronizeConfiguration(file);
+    }
+
+    private static ChunkPurgeMode parseChunkPurgeMode(String value) {
+        if (value != null) {
+            for (ChunkPurgeMode mode : ChunkPurgeMode.values()) {
+                if (mode.name()
+                    .equalsIgnoreCase(value.trim())) {
+                    return mode;
+                }
+            }
+        }
+        return ChunkPurgeMode.REPORT;
     }
 }

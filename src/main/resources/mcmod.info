@@ -11,7 +11,7 @@
 		"authorList": [
 		  "MrFuzzihead"
 		],
-		"credits": "Credit to the GTNewHorizons team for keeping 1.7.10 modding alive, frikinjay for the despawn module from Let Me Despawn, and unilock for the QoL tweaks ported from LegacyFixes.",
+		"credits": "Credit to the GTNewHorizons team for keeping 1.7.10 modding alive, frikinjay for the despawn module from Let Me Despawn, unilock for the QoL tweaks ported from LegacyFixes, and stevestech/AcE_Android for the original ChunkPurge concept.",
 		"logoFile": "",
 		"screenshots": [],
 		"parent": "",

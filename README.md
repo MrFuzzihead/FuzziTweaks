@@ -248,6 +248,53 @@ also runs FuzziTweaks; if the server denies the second leaf or has `EnableDouble
 the unchanged block state back and the prediction is undone. On a server without FuzziTweaks the client does
 not predict at all.
 
+### Chunk purge
+
+A safe, diagnostics-first port of the [ChunkPurge](https://github.com/Android25/ChunkPurge) idea (MIT,
+stevestech/AcE_Android). It is server-side only and uses the normal `ChunkProviderServer` queue API; there are
+no behaviour mixins or access transformers, so it does not fight Hodgepodge's FastUnload. Everything lives in
+the `chunkpurge` section of `config/fuzzitweaks.cfg`:
+
+| Option                         | Default | What it does                                                                                                                                                                                                                                                                                                                                                       |
+|--------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Mode`                         | `REPORT` | `OFF`, `REPORT` or `PURGE`. `REPORT` scans and logs unloadable chunks without unloading anything; `PURGE` also queues them. Default is diagnostic-only on purpose.                                                                                                                                                                                                   |
+| `IntervalTicks`                | `600`   | Ticks between scans (600 = 30 seconds).                                                                                                                                                                                                                                                                                                                            |
+| `PlayerMargin`                 | `5`     | Extra chunks beyond the server view distance to protect around each player.                                                                                                                                                                                                                                                                                         |
+| `TicketMargin`                 | `5`     | Extra chunks around each Forge chunk-loading ticket to protect.                                                                                                                                                                                                                                                                                                    |
+| `SpawnMargin`                  | `3`     | Extra chunks beyond the vanilla 8-chunk spawn area to protect.                                                                                                                                                                                                                                                                                                     |
+| `ProtectSpawn`                 | `true`  | Protect loaded spawn chunks when the dimension keeps spawn loaded.                                                                                                                                                                                                                                                                                                 |
+| `Dimensions`                   | `0`     | Dimension IDs to scan. Default is the Overworld only; add mining ages, the Nether or the End deliberately.                                                                                                                                                                                                                                                         |
+| `PlayerProtectionRadius`       | `0`     | Absolute player protection radius in chunks. `0` uses server view distance + `PlayerMargin`; set this if a mod loads a larger radius around players.                                                                                                                                                                                                               |
+| `MaxPerRun`                    | `0`     | Maximum chunks queued per `PURGE` scan. `0` means unlimited.                                                                                                                                                                                                                                                                                                       |
+| `ReportSampleSize`             | `8`     | Number of chunk coordinates included in a report line. `0` disables the sample.                                                                                                                                                                                                                                                                                    |
+| `ProcessEmptyDimensions`       | `false` | Scan dimensions with no players. Leave false for safety; with no players most non-spawn chunks are legitimately idle and produce noisy reports.                                                                                                                                                                                                                    |
+| `Debug`                        | `false` | Log scan details even when no unloadable chunks are found.                                                                                                                                                                                                                                                                                                         |
+
+`REPORT` logs one INFO line when it finds candidates, including a sample of coordinates. Use it first on a
+live server: if the count stays high across scans, identify the leaking mod before switching to `PURGE`.
+`PURGE` uses the normal unload queue, so Hodgepodge's FastUnload, `ChunkGenScheduler` protection, Forge tickets
+and the normal save path (including ChunkAPI custom chunk data) all keep working. It does not run while the
+world is saving, skips dimensions with no players by default, and never touches a chunk near a player, a Forge
+ticket or loaded spawn.
+
+**Compatibility notes:** current Hodgepodge already prevents many ghost-loading causes, so this is a diagnostic
+tool and fallback rather than a replacement for fixing the leaking mod. Do not run `PURGE` during
+pregeneration; Distant Horizons LOD generation can also make purging churn, so test or exclude those
+dimensions. Purged chunks may enter Forge's dormant chunk cache when that cache is enabled; FuzziTweaks'
+TileEntityResetFix handles stale tile entities, but `dormantChunkCacheSize=0` gives the most memory relief.
+
+The command is namespaced so it does not clash with a separately installed ChunkPurge mod (permission level 2):
+
+```
+/fuzzitweaks chunkpurge status
+/fuzzitweaks chunkpurge report [dimension]
+/fuzzitweaks chunkpurge run [dimension]
+/fuzzitweaks chunkpurge reload
+```
+
+`report` is always read-only. `run` uses the configured mode. An explicit dimension on `report`/`run`
+bypasses the `Dimensions` allowlist for diagnostics.
+
 ### Dormant chunk cache
 
 The [TileEntity Reset Fix](https://github.com/MysteriumTeam/TileEntityResetFix) mod is folded into FuzziTweaks.
