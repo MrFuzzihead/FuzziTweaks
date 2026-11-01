@@ -16,6 +16,9 @@ public class Config {
     /** Category used for Minecraft tweak settings. */
     public static final String CATEGORY_MINECRAFT = "minecraft";
 
+    /** Category used for general quality-of-life tweaks ported from LegacyFixes. */
+    public static final String CATEGORY_QOL = "qol";
+
     /** Category used for the Distant Horizons per-dimension LOD generation filter settings. */
     public static final String CATEGORY_DISTANT_HORIZONS = "distanthorizons";
 
@@ -61,6 +64,45 @@ public class Config {
     public static boolean enableDespawnModule = true;
 
     public static boolean enableBackgroundScreenshot = true;
+
+    /**
+     * Opens the matching leaf when a player right-clicks one half of a double door. The second leaf is activated
+     * only after a synthetic {@code PlayerInteractEvent} for it has passed, so claim/protection handlers can
+     * still deny the interaction instead of being bypassed by a direct block call. Clients predict the second leaf
+     * when the server also runs FuzziTweaks, so both leaves render in the same frame.
+     */
+    public static boolean enableDoubleDoors = true;
+
+    /**
+     * Clears a {@code GuiTextField} when it is right-clicked. Client-only. Some modded text fields use right-click
+     * for their own actions; disabling this leaves those fields untouched.
+     */
+    public static boolean enableRightClickClear = true;
+
+    /**
+     * Renders and measures U+202F NARROW NO-BREAK SPACE as a normal space. Java 20+ CLDR date/time formats use
+     * that character before AM/PM, and the vanilla font has no glyph for it, so the world-selection date shows a
+     * missing-glyph box and measures incorrectly. Client-only.
+     */
+    public static boolean enableNnbspFix = true;
+
+    /**
+     * Sorts the enchantment lines of item and enchanted-book tooltips by their displayed, localized name. The stored
+     * NBT is not modified; only the tooltip view is sorted. Client-only.
+     */
+    public static boolean enableSortedEnchantments = true;
+
+    /**
+     * Lets a player climb a ladder by holding jump, without having to push into the ladder first. Client-only; the
+     * slide-climbing variant is intentionally not included because the two conflict.
+     */
+    public static boolean enableJumpClimbing = true;
+
+    /**
+     * Splits a chat message containing newlines into one chat line per newline, preserving component styles,
+     * click/hover events and raw section-sign formatting. Client-only.
+     */
+    public static boolean enableChatLinebreakFix = true;
 
     public static int maxMobBlockLightLevel = 0;
 
@@ -330,6 +372,55 @@ public class Config {
             CATEGORY_MINECRAFT,
             true,
             "Take screenshots (F2) off the main thread so the game doesn't freeze while the PNG is written");
+
+        enableDoubleDoors = configuration.getBoolean(
+            "EnableDoubleDoors",
+            CATEGORY_QOL,
+            true,
+            "Open the matching leaf when a player right-clicks one half of a double door. The second leaf is "
+                + "activated only after a synthetic PlayerInteractEvent for it has passed, so claim/protection "
+                + "handlers can still deny the interaction instead of being bypassed by a direct block call. "
+                + "Clients predict the second leaf when the server also runs FuzziTweaks, so both render in the "
+                + "same frame.");
+
+        enableRightClickClear = configuration.getBoolean(
+            "EnableRightClickClear",
+            CATEGORY_QOL,
+            true,
+            "Clear a text field when it is right-clicked. Client-only. Some modded text fields use right-click "
+                + "for their own actions; disabling this leaves those fields untouched.");
+
+        enableNnbspFix = configuration.getBoolean(
+            "EnableNnbspFix",
+            CATEGORY_QOL,
+            true,
+            "Render and measure U+202F NARROW NO-BREAK SPACE (used by Java 20+ date/time formats before AM/PM) "
+                + "as a normal space, so the vanilla font does not draw a missing-glyph box. Client-only; no "
+                + "effect on Java versions whose date format does not use that character.");
+
+        enableSortedEnchantments = configuration.getBoolean(
+            "EnableSortedEnchantments",
+            CATEGORY_QOL,
+            true,
+            "Sort the enchantment lines of item and enchanted-book tooltips by their displayed, localized name. "
+                + "The stored NBT is not modified; only the tooltip view is sorted. Invalid enchantment entries "
+                + "are omitted from the tooltip instead of throwing. Client-only.");
+
+        enableJumpClimbing = configuration.getBoolean(
+            "EnableJumpClimbing",
+            CATEGORY_QOL,
+            true,
+            "Let a player climb a ladder by holding jump, without having to push into the ladder first. "
+                + "Client-only and limited to players; water/lava movement and creative flight are left alone. "
+                + "The slide-climbing variant is not included because the two conflict.");
+
+        enableChatLinebreakFix = configuration.getBoolean(
+            "EnableChatLinebreakFix",
+            CATEGORY_QOL,
+            true,
+            "Split a chat message containing newlines into one chat line per newline, preserving component "
+                + "styles, click/hover events and raw section-sign formatting. Client-only. Updatable chat lines "
+                + "(nonzero line id) are left to vanilla.");
 
         enableProjectETweaks = configuration
             .getBoolean("EnableProjectETweaks", CATEGORY_PROJECTE, true, "Enable fixes and tweaks for ProjectE");
