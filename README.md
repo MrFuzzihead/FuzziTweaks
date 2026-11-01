@@ -224,6 +224,30 @@ above still control their individual behaviour.
 Squidless shipped no license file (its upstream repository has none either), so this is a clean-room
 reimplementation from its observed/decompiled behaviour rather than a copy of its code.
 
+### LegacyFixes QoL tweaks
+
+These tweaks are ported from [LegacyFixes](https://github.com/unilock/LegacyFixes) (MIT, unilock). The
+rest of LegacyFixes is not included. They live in the `qol` section of `config/fuzzitweaks.cfg`:
+
+| Option                       | Default | What it does                                                                                                                                                                                                                                                                                                                                                       |
+|------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableDoubleDoors`          | `true`  | Right-clicking one leaf of a double door also opens/closes the other leaf. The second leaf is activated only after a synthetic `PlayerInteractEvent` for it has passed, so claim/protection handlers can deny the second half instead of being bypassed. Iron doors, sneaking players, mismatched/out-of-sync leaves and separate neighbouring doors are left alone. Server-side, with client prediction for the second leaf. |
+| `EnableRightClickClear`      | `true`  | Right-clicking a visible, enabled text field clears it. Client-only. Covers chat, NEI, config GUIs and anything else built on `GuiTextField`; a modded field that uses right-click for its own action is affected too, so this can be turned off.                                                                                                                 |
+| `EnableNnbspFix`             | `true`  | Renders and measures U+202F NARROW NO-BREAK SPACE as a normal space. Java 20+ date/time formats use that character before AM/PM, and the vanilla font has no glyph for it, so the world-selection date shows a missing-glyph box. Width measurement is fixed too, so centred/right-aligned text stays aligned. Client-only and harmless on Java 8/17.                  |
+| `EnableSortedEnchantments`   | `true`  | Sorts the enchantment lines of item and enchanted-book tooltips by their displayed, localized name. The stored NBT is left untouched, so anvils, NBT editors and other mods still see the real list. Entries that do not resolve to a registered enchantment are hidden from the tooltip instead of throwing. Client-only.                                           |
+| `EnableJumpClimbing`         | `true`  | Holding jump while on a ladder climbs it without also having to push into the ladder. Client-only and limited to players; water/lava movement and creative flight are untouched. This is the jump variant only - there is no slide-climbing option, which would conflict.                                                                                           |
+| `EnableChatLinebreakFix`     | `true`  | Splits a chat message containing newlines into one chat line per newline. Component styles, click/hover events and raw `§` formatting are preserved across the break. Updatable chat lines (nonzero line id) are left to vanilla. Client-only.                                                                                                                     |
+
+The double-door handler defers to every other `PlayerInteractEvent` handler. Do not run LegacyFixes' own
+`doubleDoors` option at the same time; disable one of the two. All six options are startup gates, so restart
+the game after changing them.
+
+Double doors use client-side prediction so both leaves render in the same frame instead of the clicked leaf
+arriving one round-trip before the other. The client only predicts when the FML handshake shows that the server
+also runs FuzziTweaks; if the server denies the second leaf or has `EnableDoubleDoors=false`, the server sends
+the unchanged block state back and the prediction is undone. On a server without FuzziTweaks the client does
+not predict at all.
+
 ### Dormant chunk cache
 
 The [TileEntity Reset Fix](https://github.com/MysteriumTeam/TileEntityResetFix) mod is folded into FuzziTweaks.

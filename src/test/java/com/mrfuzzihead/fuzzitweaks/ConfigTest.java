@@ -46,6 +46,12 @@ class ConfigTest {
 
         assertTrue(Config.enableDespawnModule);
         assertTrue(Config.enableBackgroundScreenshot);
+        assertTrue(Config.enableDoubleDoors);
+        assertTrue(Config.enableRightClickClear);
+        assertTrue(Config.enableNnbspFix);
+        assertTrue(Config.enableSortedEnchantments);
+        assertTrue(Config.enableJumpClimbing);
+        assertTrue(Config.enableChatLinebreakFix);
         assertTrue(Config.onlyRunLookGoalsNearPlayers);
         assertEquals(0, Config.maxMobBlockLightLevel);
         assertEquals(7, Config.maxMobSkyLightLevel);
@@ -65,6 +71,14 @@ class ConfigTest {
                 "}",
                 "ai {",
                 "    B:OnlyRunLookGoalsNearPlayers=false",
+                "}",
+                "qol {",
+                "    B:EnableDoubleDoors=false",
+                "    B:EnableRightClickClear=false",
+                "    B:EnableNnbspFix=false",
+                "    B:EnableSortedEnchantments=false",
+                "    B:EnableJumpClimbing=false",
+                "    B:EnableChatLinebreakFix=false",
                 "}"),
             StandardCharsets.UTF_8);
 
@@ -72,6 +86,12 @@ class ConfigTest {
 
         assertFalse(Config.enableDespawnModule);
         assertFalse(Config.enableBackgroundScreenshot);
+        assertFalse(Config.enableDoubleDoors);
+        assertFalse(Config.enableRightClickClear);
+        assertFalse(Config.enableNnbspFix);
+        assertFalse(Config.enableSortedEnchantments);
+        assertFalse(Config.enableJumpClimbing);
+        assertFalse(Config.enableChatLinebreakFix);
         assertFalse(Config.onlyRunLookGoalsNearPlayers);
     }
 

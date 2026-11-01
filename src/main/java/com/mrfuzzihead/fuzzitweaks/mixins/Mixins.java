@@ -37,6 +37,30 @@ public enum Mixins implements IMixins {
         .addClientMixins("MinecraftMixin")
         .setApplyIf(() -> Config.enableBackgroundScreenshot)),
 
+    QOL_RIGHT_CLICK_CLEAR(new MixinBuilder().setPhase(Phase.EARLY)
+        .addClientMixins("GuiTextFieldMixin")
+        .setApplyIf(() -> Config.enableRightClickClear)),
+
+    QOL_DOUBLE_DOORS_PRESENCE(new MixinBuilder().setPhase(Phase.EARLY)
+        .addClientMixins("FMLHandshakeModListMixin")
+        .setApplyIf(() -> Config.enableDoubleDoors)),
+
+    QOL_NNBSP_FIX(new MixinBuilder().setPhase(Phase.EARLY)
+        .addClientMixins("FontRendererMixin")
+        .setApplyIf(() -> Config.enableNnbspFix)),
+
+    QOL_SORTED_ENCHANTMENTS(new MixinBuilder().setPhase(Phase.EARLY)
+        .addClientMixins("ItemStackMixin", "ItemEnchantedBookMixin")
+        .setApplyIf(() -> Config.enableSortedEnchantments)),
+
+    QOL_JUMP_CLIMBING(new MixinBuilder().setPhase(Phase.EARLY)
+        .addClientMixins("EntityLivingBaseJumpClimbMixin")
+        .setApplyIf(() -> Config.enableJumpClimbing)),
+
+    QOL_CHAT_LINEBREAK(new MixinBuilder().setPhase(Phase.EARLY)
+        .addClientMixins("GuiNewChatMixin")
+        .setApplyIf(() -> Config.enableChatLinebreakFix)),
+
     PROJECTE(new MixinBuilder().setPhase(Phase.LATE)
         .addClientMixins("projecte.ItemSearchHelperNEIMixin")
         .addRequiredMod(TargetMods.PROJECTE)
