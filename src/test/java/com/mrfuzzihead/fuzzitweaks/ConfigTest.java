@@ -57,6 +57,17 @@ class ConfigTest {
         assertEquals(7, Config.maxMobSkyLightLevel);
         assertArrayEquals(new int[0], Config.distantHorizonsDimensionIds);
         assertEquals("http://dist.creeper.host", Config.hatsDownloadBaseUrl);
+        assertTrue(Config.enableWindParticles);
+        assertEquals(4.0F, Config.windMaxSpeed, 1.0E-6F);
+        assertEquals(1.5F, Config.windPatternDays, 1.0E-6F);
+        assertEquals(45.0F, Config.windGustSeconds, 1.0E-6F);
+        assertEquals(1.0F, Config.windTurbulence, 1.0E-6F);
+        assertEquals(40.0F, Config.windTurbulenceScale, 1.0E-6F);
+        assertEquals(0.05F, Config.windParticleResponse, 1.0E-6F);
+        assertEquals(0.15F, Config.windVerticalStrength, 1.0E-6F);
+        assertEquals(0.0F, Config.windPrevailingDirectionDegrees, 1.0E-6F);
+        assertArrayEquals(new int[] { 0 }, Config.windDimensions);
+        assertFalse(Config.windDimensionListIsDenylist);
     }
 
     @Test
@@ -79,6 +90,13 @@ class ConfigTest {
                 "    B:EnableSortedEnchantments=false",
                 "    B:EnableJumpClimbing=false",
                 "    B:EnableChatLinebreakFix=false",
+                "}",
+                "wind {",
+                "    I:Dimensions <",
+                "        -1",
+                "        1",
+                "    >",
+                "    B:DimensionListIsDenylist=true",
                 "}"),
             StandardCharsets.UTF_8);
 
@@ -93,6 +111,8 @@ class ConfigTest {
         assertFalse(Config.enableJumpClimbing);
         assertFalse(Config.enableChatLinebreakFix);
         assertFalse(Config.onlyRunLookGoalsNearPlayers);
+        assertArrayEquals(new int[] { -1, 1 }, Config.windDimensions);
+        assertTrue(Config.windDimensionListIsDenylist);
     }
 
     @Test
