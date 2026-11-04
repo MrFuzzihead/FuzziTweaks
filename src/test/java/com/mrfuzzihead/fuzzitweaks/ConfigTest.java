@@ -57,6 +57,15 @@ class ConfigTest {
         assertEquals(7, Config.maxMobSkyLightLevel);
         assertArrayEquals(new int[0], Config.distantHorizonsDimensionIds);
         assertEquals("http://dist.creeper.host", Config.hatsDownloadBaseUrl);
+        assertTrue(Config.enableWindParticles);
+        assertEquals(4.0F, Config.windMaxSpeed, 1.0E-6F);
+        assertEquals(1.5F, Config.windPatternDays, 1.0E-6F);
+        assertEquals(45.0F, Config.windGustSeconds, 1.0E-6F);
+        assertEquals(1.0F, Config.windTurbulence, 1.0E-6F);
+        assertEquals(40.0F, Config.windTurbulenceScale, 1.0E-6F);
+        assertEquals(0.05F, Config.windParticleResponse, 1.0E-6F);
+        assertEquals(0.15F, Config.windVerticalStrength, 1.0E-6F);
+        assertEquals(0.0F, Config.windPrevailingDirectionDegrees, 1.0E-6F);
     }
 
     @Test

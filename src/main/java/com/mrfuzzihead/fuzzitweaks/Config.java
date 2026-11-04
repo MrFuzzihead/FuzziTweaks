@@ -61,6 +61,9 @@ public class Config {
     /** Category used for Railcraft compatibility fixes. */
     public static final String CATEGORY_RAILCRAFT = "railcraft";
 
+    /** Category used for the client-side simulated wind that moves particles. */
+    public static final String CATEGORY_WIND = "wind";
+
     public static boolean enableDespawnModule = true;
 
     public static boolean enableBackgroundScreenshot = true;
@@ -274,6 +277,47 @@ public class Config {
      * vanilla's single-tick behaviour.
      */
     public static int leashLoadGraceTicks = 200;
+
+    /**
+     * Main switch for the client-side wind simulation. Wind is applied to every particle that
+     * {@code EffectRenderer} ticks, including modded ones such as campfire smoke and Railcraft smoker puffs.
+     * Read at startup, because it also gates the {@code EffectRenderer} mixin; restart after changing it.
+     */
+    public static boolean enableWindParticles = true;
+
+    /**
+     * Peak base wind speed in blocks per second. The climate spends most of its time well below this and only
+     * approaches it during a strong gust; the turbulence field can briefly exceed it locally.
+     */
+    public static float windMaxSpeed = 4.0F;
+
+    /**
+     * How long the slow prevailing direction and average speed take to wander through one cycle, in in-game
+     * days. One in-game day is 20 real minutes.
+     */
+    public static float windPatternDays = 1.5F;
+
+    /** Approximate period of the gust envelope, in seconds. Lower values make the wind pulse more often. */
+    public static float windGustSeconds = 45.0F;
+
+    /** Amplitude of the local curl turbulence in blocks per second. This is what makes particle paths curve. */
+    public static float windTurbulence = 1.0F;
+
+    /** Size of the largest turbulence cell in blocks. Smaller values produce tighter, more visible eddies. */
+    public static float windTurbulenceScale = 40.0F;
+
+    /**
+     * How quickly a slower particle is pulled toward the local wind, per tick. The push is bounded: a particle
+     * can approach the wind speed but is never accelerated past it, and a particle that already moves faster
+     * than the wind keeps its own momentum. 0 disables the push and leaves particles untouched.
+     */
+    public static float windParticleResponse = 0.05F;
+
+    /** Amplitude of the gentle vertical component in blocks per second. 0 disables vertical wind entirely. */
+    public static float windVerticalStrength = 0.15F;
+
+    /** Prevailing wind direction in degrees around the world's X axis. 0 blows toward +X (east). */
+    public static float windPrevailingDirectionDegrees = 0.0F;
 
     /**
      * Dimension IDs this list applies to. The default is empty so the enabled filter preserves Distant
@@ -708,6 +752,85 @@ public class Config {
                 + "reset the result, or the event was canceled before Railcraft's handler ran. A synthetic event "
                 + "posted directly to the event bus does not appear as an onPlayerInteract trace. Intended for "
                 + "diagnosis, so it is off by default.");
+
+        enableWindParticles = configuration.getBoolean(
+            "EnableWindParticles",
+            CATEGORY_WIND,
+            true,
+            "Apply the simulated wind to client-side particles. Covers every EntityFX the vanilla effect "
+                + "renderer ticks, including modded campfire and smoker particles. Client-only and read at "
+                + "startup because it also selects the EffectRenderer mixin; restart after changing it.");
+
+        windMaxSpeed = configuration.getFloat(
+            "MaxSpeed",
+            CATEGORY_WIND,
+            4.0F,
+            0.0F,
+            20.0F,
+            "Peak base wind speed in blocks per second. The climate is usually well below this and only "
+                + "approaches it during a strong gust.");
+
+        windPatternDays = configuration.getFloat(
+            "PatternDays",
+            CATEGORY_WIND,
+            1.5F,
+            0.05F,
+            30.0F,
+            "How long the slow prevailing direction and average speed take to wander through one cycle, in "
+                + "in-game days. One in-game day is 20 real minutes, so 1.5 is a 30 minute cycle.");
+
+        windGustSeconds = configuration.getFloat(
+            "GustSeconds",
+            CATEGORY_WIND,
+            45.0F,
+            2.0F,
+            600.0F,
+            "Approximate period of the gust envelope in seconds. Lower values make the wind pulse more often.");
+
+        windTurbulence = configuration.getFloat(
+            "Turbulence",
+            CATEGORY_WIND,
+            1.0F,
+            0.0F,
+            8.0F,
+            "Amplitude of the local curl turbulence in blocks per second. This is what makes particle paths "
+                + "curve instead of running in a straight diagonal. 0 leaves only the base wind.");
+
+        windTurbulenceScale = configuration.getFloat(
+            "TurbulenceScale",
+            CATEGORY_WIND,
+            40.0F,
+            4.0F,
+            256.0F,
+            "Size of the largest turbulence cell in blocks. Smaller values produce tighter, more visible "
+                + "eddies; larger values produce long sweeping curves.");
+
+        windParticleResponse = configuration.getFloat(
+            "ParticleResponse",
+            CATEGORY_WIND,
+            0.05F,
+            0.0F,
+            0.5F,
+            "How quickly a slower particle is pulled toward the local wind, per tick. The push is bounded: a "
+                + "particle never accelerates past the wind speed, and one that already moves faster keeps its "
+                + "momentum. 0 leaves particles completely untouched.");
+
+        windVerticalStrength = configuration.getFloat(
+            "VerticalStrength",
+            CATEGORY_WIND,
+            0.15F,
+            0.0F,
+            4.0F,
+            "Amplitude of the gentle vertical wind component in blocks per second. 0 disables vertical wind.");
+
+        windPrevailingDirectionDegrees = configuration.getFloat(
+            "PrevailingDirectionDegrees",
+            CATEGORY_WIND,
+            0.0F,
+            0.0F,
+            360.0F,
+            "Prevailing wind direction in degrees around the world's X axis. 0 blows toward +X (east). The "
+                + "slow climate noise wanders around this heading.");
 
         if (configuration.hasChanged()) {
             configuration.save();

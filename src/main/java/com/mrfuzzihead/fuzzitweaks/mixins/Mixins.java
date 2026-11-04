@@ -61,6 +61,10 @@ public enum Mixins implements IMixins {
         .addClientMixins("GuiNewChatMixin")
         .setApplyIf(() -> Config.enableChatLinebreakFix)),
 
+    WIND_PARTICLES(new MixinBuilder().setPhase(Phase.EARLY)
+        .addClientMixins("EffectRendererMixin")
+        .setApplyIf(() -> Config.enableWindParticles)),
+
     PROJECTE(new MixinBuilder().setPhase(Phase.LATE)
         .addClientMixins("projecte.ItemSearchHelperNEIMixin")
         .addRequiredMod(TargetMods.PROJECTE)

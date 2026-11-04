@@ -301,6 +301,31 @@ every cart item in Railcraft's `CartUtils.vanillaCartItemMap`. It lives in the `
 The mixin is loaded when either option is enabled, so `EnableRailcraftMinecartPlacementFix=false` together with
 `LogMinecartPlacementDebug=true` observes the unmodified behaviour while still collecting the event traces.
 
+### Wind
+
+A client-only simulated wind that advects the particles the vanilla effect renderer is already ticking. It
+does not add any particles of its own; it moves existing ones, so long-lived smoke from Et Futurum campfires,
+Railcraft smokers and similar blocks drifts and curves into the distance, while short-lived effects get a small
+nudge. The wind is purely visual and needs nothing from the server.
+
+The wind has a slow climate (prevailing direction, average speed and gust envelope changing over in-game days)
+and a local curl-noise field (eddies that vary over tens of blocks and make paths curve instead of running in a
+straight diagonal). A particle that is already moving faster than the local wind keeps its momentum; a slower
+one is pushed toward the wind speed and never past it. Wind is deterministic for a given dimension and world
+time, so it does not need a server sync. It lives in the `wind` section of `config/fuzzitweaks.cfg`:
+
+| Option                       | Default | What it does                                                                                                                                 |
+|------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `EnableWindParticles`        | `true`  | Master switch. Read at startup because it also selects the `EffectRenderer` mixin, so restart after changing it.                              |
+| `MaxSpeed`                   | `4.0`   | Peak base wind speed in blocks per second. The climate usually sits well below this and only approaches it during a strong gust.               |
+| `PatternDays`                | `1.5`   | How long the slow prevailing direction and average speed take to wander through one cycle, in in-game days (one day is 20 real minutes).       |
+| `GustSeconds`                | `45`    | Approximate period of the gust envelope in seconds. Lower values make the wind pulse more often.                                               |
+| `Turbulence`                 | `1.0`   | Amplitude of the local curl field in blocks per second. This is what curves the trails; 0 leaves only a straight base wind.                    |
+| `TurbulenceScale`            | `40`    | Size of the largest turbulence cell in blocks. Smaller values give tighter eddies, larger values give long sweeping curves.                    |
+| `ParticleResponse`           | `0.05`  | How quickly a slower particle is pulled toward the local wind, per tick. The push is bounded, so particles never exceed the wind speed. 0 disables it. |
+| `VerticalStrength`           | `0.15`  | Amplitude of the gentle vertical component in blocks per second. 0 keeps the wind horizontal.                                                  |
+| `PrevailingDirectionDegrees` | `0`     | Prevailing heading in degrees around the world's X axis; 0 blows toward +X (east). The slow climate noise wanders around this heading.         |
+
 ### Issues
 
 Please open issues [here](https://github.com/MrFuzzihead/FuzziTweaks/issues).
