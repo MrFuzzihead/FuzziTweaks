@@ -311,8 +311,10 @@ nudge. The wind is purely visual and needs nothing from the server.
 The wind has a slow climate (prevailing direction, average speed and gust envelope changing over in-game days)
 and a local curl-noise field (eddies that vary over tens of blocks and make paths curve instead of running in a
 straight diagonal). A particle that is already moving faster than the local wind keeps its momentum; a slower
-one is pushed toward the wind speed and never past it. Wind is deterministic for a given dimension and world
-time, so it does not need a server sync. It lives in the `wind` section of `config/fuzzitweaks.cfg`:
+one is pushed toward the wind speed and never past it. The climate runs on a wind clock that ignores large time
+jumps such as sleeping or `/time`, so trails do not snap when the world time changes. Wind is deterministic for
+a given dimension and wind clock, so it does not need a server sync. By default it only runs in the Overworld;
+the dimension list can be flipped to a denylist. It lives in the `wind` section of `config/fuzzitweaks.cfg`:
 
 | Option                       | Default | What it does                                                                                                                                 |
 |------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------|
@@ -325,6 +327,12 @@ time, so it does not need a server sync. It lives in the `wind` section of `conf
 | `ParticleResponse`           | `0.05`  | How quickly a slower particle is pulled toward the local wind, per tick. The push is bounded, so particles never exceed the wind speed. 0 disables it. |
 | `VerticalStrength`           | `0.15`  | Amplitude of the gentle vertical component in blocks per second. 0 keeps the wind horizontal.                                                  |
 | `PrevailingDirectionDegrees` | `0`     | Prevailing heading in degrees around the world's X axis; 0 blows toward +X (east). The slow climate noise wanders around this heading.         |
+| `Dimensions`                 | `0`     | Dimension IDs the wind runs in. Vanilla: 0=Overworld, -1=Nether, 1=End. Defaults to the Overworld only. An empty list allows no dimensions in allowlist mode and every dimension in denylist mode. |
+| `DimensionListIsDenylist`    | `false` | When `false`, `Dimensions` is an allowlist. When `true`, it is a denylist and wind runs in every dimension except the listed ones.             |
+
+Rain particles are affected automatically and will slant with the wind. Snow in 1.7.10 is a scrolling texture
+layer rather than particles, so it is not affected. Use `/fuzzitweaks wind` for a live readout of the current
+base wind, gust multiplier, local wind at the player and the active dimension filter.
 
 ### Issues
 

@@ -320,6 +320,19 @@ public class Config {
     public static float windPrevailingDirectionDegrees = 0.0F;
 
     /**
+     * Dimension IDs the wind runs in. Defaults to the Overworld only. See
+     * {@link #windDimensionListIsDenylist} for how the list is interpreted.
+     */
+    public static int[] windDimensions = new int[] { 0 };
+
+    /**
+     * If {@code false}, {@link #windDimensions} is an allowlist: wind only runs in the listed dimensions. If
+     * {@code true}, it is a denylist: wind runs everywhere except the listed dimensions. Defaults to an
+     * allowlist containing only the Overworld.
+     */
+    public static boolean windDimensionListIsDenylist = false;
+
+    /**
      * Dimension IDs this list applies to. The default is empty so the enabled filter preserves Distant
      * Horizons' normal all-dimension behaviour; see {@link #distantHorizonsDimensionListIsDenylist} for how an
      * empty list is interpreted in denylist and allowlist mode.
@@ -831,6 +844,24 @@ public class Config {
             360.0F,
             "Prevailing wind direction in degrees around the world's X axis. 0 blows toward +X (east). The "
                 + "slow climate noise wanders around this heading.");
+
+        windDimensions = configuration
+            .get(
+                CATEGORY_WIND,
+                "Dimensions",
+                new int[] { 0 },
+                "Dimension IDs the wind runs in, see DimensionListIsDenylist. Vanilla: 0=Overworld, -1=Nether, "
+                    + "1=End; modded dimensions use their own IDs. Defaults to the Overworld only. An empty list "
+                    + "allows no dimensions in allowlist mode and every dimension in denylist mode.")
+            .getIntList();
+
+        windDimensionListIsDenylist = configuration.getBoolean(
+            "DimensionListIsDenylist",
+            CATEGORY_WIND,
+            false,
+            "If false, Dimensions is an allowlist: wind only runs in the listed dimensions. If true, it is a "
+                + "denylist: wind runs everywhere except the listed dimensions. Defaults to an allowlist "
+                + "containing only the Overworld.");
 
         if (configuration.hasChanged()) {
             configuration.save();

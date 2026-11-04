@@ -4,9 +4,10 @@ package com.mrfuzzihead.fuzzitweaks.common.util.wind;
  * Slow wind climate: the prevailing direction, base speed and gust envelope that all particles share.
  *
  * <p>
- * Everything is driven by {@link WindNoise#value1D(double)} over {@code world.getTotalWorldTime()}, so the same
- * world time and dimension always produce the same wind. The climate changes over in-game days; the spatial
- * turbulence that actually curves individual trails lives in {@link WindField}.
+ * Everything is driven by {@link WindNoise#value1D(double)} over a monotonically advancing wind clock derived
+ * from {@code world.getTotalWorldTime()}; large jumps such as sleeping or {@code /time} are clamped by the
+ * runtime, so the sample is deterministic for a given dimension and wind clock. The climate changes over
+ * in-game days; the spatial turbulence that actually curves individual trails lives in {@link WindField}.
  *
  * <p>
  * Units are Minecraft ticks and blocks: {@code maxSpeed} is blocks per tick, and {@code patternTicks} /

@@ -66,6 +66,8 @@ class ConfigTest {
         assertEquals(0.05F, Config.windParticleResponse, 1.0E-6F);
         assertEquals(0.15F, Config.windVerticalStrength, 1.0E-6F);
         assertEquals(0.0F, Config.windPrevailingDirectionDegrees, 1.0E-6F);
+        assertArrayEquals(new int[] { 0 }, Config.windDimensions);
+        assertFalse(Config.windDimensionListIsDenylist);
     }
 
     @Test
@@ -88,6 +90,13 @@ class ConfigTest {
                 "    B:EnableSortedEnchantments=false",
                 "    B:EnableJumpClimbing=false",
                 "    B:EnableChatLinebreakFix=false",
+                "}",
+                "wind {",
+                "    I:Dimensions <",
+                "        -1",
+                "        1",
+                "    >",
+                "    B:DimensionListIsDenylist=true",
                 "}"),
             StandardCharsets.UTF_8);
 
@@ -102,6 +111,8 @@ class ConfigTest {
         assertFalse(Config.enableJumpClimbing);
         assertFalse(Config.enableChatLinebreakFix);
         assertFalse(Config.onlyRunLookGoalsNearPlayers);
+        assertArrayEquals(new int[] { -1, 1 }, Config.windDimensions);
+        assertTrue(Config.windDimensionListIsDenylist);
     }
 
     @Test
