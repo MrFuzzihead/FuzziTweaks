@@ -37,9 +37,6 @@ public class Config {
     /** Category used for Galacticraft tweaks settings. */
     public static final String CATEGORY_GALACTICRAFT = "galacticraft";
 
-    /** Category used for Artifice tweaks settings. */
-    public static final String CATEGORY_ARTIFICE = "artifice";
-
     /** Category used for Hats tweaks settings. */
     public static final String CATEGORY_HATS = "hats";
 
@@ -138,8 +135,6 @@ public class Config {
     public static boolean enableGalacticraftRocketNEIFix = true;
 
     public static boolean enableDistantHorizonsDimensionFilter = true;
-
-    public static boolean enableArtificeEnchantIdFix = true;
 
     /**
      * Repoints the Hats mod's hat download at a live mirror. Hats reads its hat manifest from a hardcoded
@@ -561,15 +556,6 @@ public class Config {
             true,
             "If true, DimensionIds is a denylist: Distant Horizons generates LODs everywhere except those dimensions. "
                 + "If false, DimensionIds is an allowlist: Distant Horizons only generates LODs in those dimensions.");
-
-        enableArtificeEnchantIdFix = configuration.getBoolean(
-            "EnableArtificeEnchantIdFix",
-            CATEGORY_ARTIFICE,
-            true,
-            "Fixes Artifice registering all of its enabled enchantments on the same enchantment ID "
-                + "when an ID conflict detector replaces the vanilla Enchantment constructor "
-                + "(its registration loop only detected collisions via that constructor throwing). "
-                + "Assigns a verified-free ID to each enchantment instead.");
 
         enableHatsEndpointFix = configuration.getBoolean(
             "EnableHatsEndpointFix",

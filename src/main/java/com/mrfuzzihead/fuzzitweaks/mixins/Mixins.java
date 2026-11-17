@@ -101,11 +101,6 @@ public enum Mixins implements IMixins {
         .addRequiredMod(TargetMods.GALACTICRAFT)
         .setApplyIf(() -> Config.enableGalacticraftMain)),
 
-    ARTIFICE(new MixinBuilder().setPhase(Phase.LATE)
-        .addCommonMixins("artifice.ArtificeEnchantsMixin")
-        .addRequiredMod(TargetMods.ARTIFICE)
-        .setApplyIf(() -> Config.enableArtificeEnchantIdFix)),
-
     HATS(new MixinBuilder().setPhase(Phase.LATE)
         .addCommonMixins("hats.ThreadHatsReaderMixin", "hats.ThreadGetModMobSupportMixin")
         .addRequiredMod(TargetMods.HATS)
