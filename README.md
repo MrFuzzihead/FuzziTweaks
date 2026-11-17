@@ -134,16 +134,19 @@ main startup gate.
 
 ### Artifice
 
-Artifice registers its three enchantments by probing IDs upwards and relying on the vanilla `Enchantment`
-constructor to throw when an ID is taken. An ID-conflict detector replaces that constructor with a hook that records
-the collision instead of throwing, so Artifice's probes all succeed at the same first free ID and overwrite each
-other. FuzziTweaks assigns a verified-free ID to each enabled Artifice enchantment before constructing it. In a
-clean, unpatched environment the chosen IDs are the same as Artifice's original probe, so existing worlds are
-unaffected. Everything lives in the `artifice` section of `config/fuzzitweaks.cfg`:
+Removed in favour of an upstream fix. Artifice used to register its three enchantments by probing IDs upwards and
+relying on the vanilla `Enchantment` constructor to throw when an ID was taken; an ID-conflict detector replaces that
+constructor with a hook that records the collision instead, so Artifice's probes all succeeded at the same first free
+ID and overwrote each other. Earlier FuzziTweaks releases shipped an `artifice` config section
+(`EnableArtificeEnchantIdFix`) with a mixin that picked a verified-free ID per enchantment instead.
 
-| Option                       | Default | What it does                                                                                                                                                         |
-|------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `EnableArtificeEnchantIdFix` | `true`  | Gives Artifice's invisible, soul-stealing and resistance enchantments distinct free IDs when an ID-conflict detector suppresses the constructor's duplicate check. Disable it to leave Artifice's original registration alone. |
+**Artifice 1.1.6 does that itself**, so the mixin, the `artifice` config section and FuzziTweaks' compile-time
+dependency on `shukaro.artifice` are all gone. Two consequences:
+
+* Nothing here patches Artifice any more, so FuzziTweaks no longer needs `shukaro.artifice` at load time - which is
+  what makes it safe in a pack that runs Artifice built under the new `com.mrfuzzihead.artifice` package.
+* On an Artifice older than 1.1.6 the enchantments can still collapse onto one id in a pack with an ID-conflict
+  detector. Update Artifice rather than holding FuzziTweaks back.
 
 ### Distant Horizons
 
