@@ -76,7 +76,7 @@ public enum Mixins implements IMixins {
         .setApplyIf(() -> Config.enableThaumicAdditionsTweaks)),
 
     NOTENOUGHITEMS(new MixinBuilder().setPhase(Phase.LATE)
-        .addClientMixins("notenoughitems.MixinWorldOverlayRenderer")
+        .addClientMixins("notenoughitems.MixinMobOverlayScanColumn")
         .addRequiredMod(TargetMods.NEI)
         .setApplyIf(() -> Config.enableNEITweaks)),
 
