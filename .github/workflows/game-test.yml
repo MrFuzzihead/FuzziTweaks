@@ -40,6 +40,10 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
+      # The wrapper is checked in from Windows, so its executable bit is not set.
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
       - name: Accept the Minecraft EULA
         run: mkdir -p run/server && echo "eula=true" > run/server/eula.txt
 
@@ -58,7 +62,7 @@ jobs:
 
       - name: Upload the logs and the coverage report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: game-test-logs
           path: |

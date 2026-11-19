@@ -172,6 +172,10 @@ abstract class JacocoAgentArgumentProvider : CommandLineArgumentProvider {
 
     override fun asArguments(): Iterable<String> {
         val jar = extractAgent()
+        // A reused build directory would otherwise keep the dumps of earlier runs. Their class ids no longer match
+        // the new execution data (the version string in Tags alone changes the class), and JaCoCo cannot report on
+        // two copies of the same class.
+        java.io.File(classDumpDir.get()).deleteRecursively()
         return listOf(
             "-javaagent:" + jar.absolutePath +
                 "=destfile=" + destFile.get() +
