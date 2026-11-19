@@ -1,0 +1,67 @@
+name: Game test
+
+# Boots a dedicated server with the never-shipped game test mod (src/gameTest/java) and fails when an in-game
+# assertion fails. The reusable GTNH build-and-test workflow only runs the headless unit tests, so the parts of the
+# mod that need a live game - the mixin-transformed spawn-light rules, the AI goal stripping on entity join and the
+# double-door interaction - are covered here.
+#
+# The mod prints FUZZITWEAKS_GAMETEST_OK only after every check passed and the server exited, so a crash or a hung
+# run fails the marker step instead of passing silently.
+
+on:
+  pull_request:
+    branches: [ master, main ]
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  game-test:
+    name: Dedicated server assertions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # The Gradle daemon needs 17+, the mod and the game run need 8. Same set as the GTNH build workflow.
+      - name: Set up JDKs
+        uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: |
+            8
+            17
+            21
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - name: Accept the Minecraft EULA
+        run: mkdir -p run/server && echo "eula=true" > run/server/eula.txt
+
+      - name: Run the game tests
+        run: ./gradlew gameTestServer --stacktrace
+
+      - name: Check the result marker
+        # Grep every log: the marker is printed to the server console, which FML writes to fml-server-latest.log,
+        # and fml-junk-earlystartup.log sorts before latest.log.
+        run: |
+          ls -l run/server/logs/ || true
+          test -n "$(ls run/server/logs/*.log 2>/dev/null)" || { echo "no server log was written"; exit 1; }
+          grep -hE "FUZZITWEAKS-GAMETEST\] [0-9]+/[0-9]+ checks passed" run/server/logs/*.log || true
+          grep -hq "FUZZITWEAKS_GAMETEST_OK" run/server/logs/*.log
+          ! grep -hq "FUZZITWEAKS_GAMETEST_FAILED" run/server/logs/*.log
+
+      - name: Upload the logs and the coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: game-test-logs
+          path: |
+            run/server/logs/
+            build/reports/jacoco/gameTest/
+          if-no-files-found: warn

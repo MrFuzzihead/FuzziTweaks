@@ -142,6 +142,12 @@ class ChatLineSplitterTest {
         assertEquals("§c§lnext", secondLine("§c§lred\nnext"));
         assertEquals("next", secondLine("§cred§r\nnext"));
         assertEquals("§lnext", secondLine("§lred\nnext"));
+        // Every style flag is carried, in the order the prefix builder emits them.
+        assertEquals("§k§m§n§onext", secondLine("§k§m§n§ored\nnext"));
+        // Colour codes may be upper case; the carried prefix is normalised to lower case.
+        assertEquals("§anext", secondLine("§Ared\nnext"));
+        // A lone trailing section sign is not a code and must not consume the next line.
+        assertEquals("next", secondLine("red§\nnext"));
     }
 
     private static String secondLine(String text) {

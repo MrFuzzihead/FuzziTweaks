@@ -98,7 +98,10 @@ Everything lives in the `projecte` section of `config/fuzzitweaks.cfg`:
 
 FuzziTweaks' NEI tweak makes the world mob-spawn overlay use the same configured block-light and sky-light
 thresholds as its hostile-mob spawn rules (`MaxMobSpawnLightLevel` and `MaxMobSkyLightLevel`). The collision,
-liquid and overlay-mode checks are unchanged. Disabling the option leaves NEI's original fixed thresholds in place.
+liquid and overlay-mode checks are unchanged. Since NEI 2.9.9 the scan is done by `MobOverlayScan`, so the tweak
+retunes the two light literals in `MobOverlayScan$Column#getSpawnMode`; on an NEI that no longer has that method (or
+an older NEI, where the overlay still lives in `WorldOverlayRenderer`) it leaves the overlay untouched instead of
+failing. Disabling the option leaves NEI's original fixed thresholds in place.
 Galacticraft's NEI recipe-handler fixes have their own options in the Galacticraft section below. Everything lives
 in the `nei` section of `config/fuzzitweaks.cfg`:
 
@@ -340,4 +343,40 @@ base wind, gust multiplier, local wind at the player and the active dimension fi
 ### Issues
 
 Please open issues [here](https://github.com/MrFuzzihead/FuzziTweaks/issues).
+
+## Testing
+
+Two test layers run in CI; both are plain Gradle tasks.
+
+### Unit tests
+
+`./gradlew test` runs `src/test/java` headless on a Java 8 toolchain (the JVM generation the mod ships for)
+with JUnit 5 and Mockito. Mockito is used where a test needs a Minecraft object it cannot build by hand:
+`LeashLoadGraceTest` drives the lead grace window with a mocked `World`, `EntityLiving` and `EntityLeashKnot`, and
+`DoubleDoorsInteractionTest` drives the double-door handler with a mocked `World`, `BlockDoor` and `EntityPlayer`.
+Mixins cannot be applied headless, so the mixin classes are covered by bytecode guard tests that read the compiled
+mixin and its target class instead.
+
+Coverage comes from JaCoCo (`./gradlew jacocoTestReport`, HTML in `build/reports/jacoco/test/html`) and
+`./gradlew check` fails the build when line or branch coverage drops below the floor configured in
+`addon.gradle.kts`. The floor is a regression guard at the current baseline, not a target; raise it when a change
+adds covered code.
+
+### In-game tests
+
+`src/gameTest/java` holds a separate, never-shipped test mod. `./gradlew gameTestServer` boots a dedicated server
+with it on the classpath, asserts FuzziTweaks against the real game at server start, prints
+`FUZZITWEAKS_GAMETEST_OK` (or `FUZZITWEAKS_GAMETEST_FAILED`) and exits with the result. It covers what only a live
+game can: the mixin-transformed hostile-mob light rules, the AI goal stripping on entity join, and the double-door
+interaction through a real `PlayerInteractEvent`.
+
+```
+mkdir -p run/server && echo "eula=true" > run/server/eula.txt
+./gradlew gameTestServer
+```
+
+`-PgameTest` adds the same test mod to any run task (for example `./gradlew runClient -PgameTest`). The run is
+instrumented with JaCoCo as well; `jacocoGameTestReport` turns `build/jacoco/gameTest.exec` into a coverage report
+for `build/reports/jacoco/gameTest/`, using the post-transform classes the game loaded (a dev launch rewrites
+every class, so the on-disk classes have different JaCoCo ids and cannot be merged into the unit test report).
 
