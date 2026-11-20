@@ -3,12 +3,8 @@ package com.mrfuzzihead.fuzzitweaks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.mrfuzzihead.fuzzitweaks.common.GalacticraftRecipes;
-
-import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
 @Mod(
@@ -33,14 +29,5 @@ public class FuzziTweaks {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         proxy.preInit(event);
-    }
-
-    @Mod.EventHandler
-    public void postInit(FMLPostInitializationEvent event) {
-        // Restore Galacticraft recipes the GTNH fork gated behind its coremod/GregTech.
-        // Guarded so the GC-referencing class is only touched when GC is present.
-        if (Loader.isModLoaded("GalacticraftCore")) {
-            GalacticraftRecipes.register();
-        }
     }
 }

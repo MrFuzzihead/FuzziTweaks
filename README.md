@@ -102,8 +102,9 @@ liquid and overlay-mode checks are unchanged. Since NEI 2.9.9 the scan is done b
 retunes the two light literals in `MobOverlayScan$Column#getSpawnMode`; on an NEI that no longer has that method (or
 an older NEI, where the overlay still lives in `WorldOverlayRenderer`) it leaves the overlay untouched instead of
 failing. Disabling the option leaves NEI's original fixed thresholds in place.
-Galacticraft's NEI recipe-handler fixes have their own options in the Galacticraft section below. Everything lives
-in the `nei` section of `config/fuzzitweaks.cfg`:
+Galacticraft's recipe and NEI restoration now lives in the [Galacticraft fork](https://github.com/MrFuzzihead/Galacticraft)
+(`gtnh-compat` branch) rather than here; only the Coal Generator tweak remains in the Galacticraft section below.
+Everything else lives in the `nei` section of `config/fuzzitweaks.cfg`:
 
 | Option              | Default | What it does                                                                                                                                 |
 |---------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------|
@@ -204,12 +205,12 @@ lives in the `galacticraft` section of `config/fuzzitweaks.cfg`:
 |-----------------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `EnableGalacticraftMain`                      | `true`  | Main switch for all Galacticraft mixins. When disabled, none of the mixins below are applied; the individual switches still have their own settings.                                                                                                                                                                               |
 | `EnableGalacticraftCoalGeneratorFuelTweak`    | `true`  | Lets the Coal Generator burn any furnace-burnable item (charcoal, wood, mod fuels, ...) instead of only coal and coal blocks, scaled to each item's vanilla furnace burn time at Galacticraft's 1/5 rate. The GUI slot, hoppers/pipes and the tile's `isItemValidForSlot` all accept the wider fuel set. Container fuels such as lava buckets leave their empty container behind. |
-| `EnableGalacticraftCompressorNEIFix`          | `true`  | Re-registers Galacticraft's Ingot/Electric-Ingot Compressor NEI handlers, which the GTNH fork leaves to GregTech. Disabling it leaves the rocket NEI displays enabled.                                                                                                                                                               |
-| `EnableGalacticraftRocketNEIFix`              | `true`  | Re-registers Galacticraft's NASA Workbench rocket NEI handlers (Tier 1-3 and Cargo) and fills their recipe displays, which the GTNH fork leaves to GregTech. Disabling it leaves the compressor NEI handlers enabled.                                                                                                                |
 
-On a fresh config both NEI options default to `true`. On upgrade, the new rocket key inherits the old combined
-`EnableGalacticraftCompressorNEIFix` value when it is missing, so a previously disabled combined option does not
-re-enable the rocket recipes.
+> **Note (1.2.x -> 2.0.0):** the recipe and NEI restoration that used to live here (the NASA Workbench, Tier 1-3
+> rocket, Cargo Rocket and oxygen tank recipes, plus the rocket/compressor NEI handlers) has moved into the
+> [Galacticraft fork](https://github.com/MrFuzzihead/Galacticraft)'s `gtnh-compat` branch. Install that jar instead.
+> `EnableGalacticraftCompressorNEIFix` and `EnableGalacticraftRocketNEIFix` are gone; if they are still in your
+> config file, Forge will leave the stale keys alone and simply ignore them.
 
 ### Squid spawns
 

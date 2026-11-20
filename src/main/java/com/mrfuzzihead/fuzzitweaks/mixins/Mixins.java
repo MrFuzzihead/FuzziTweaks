@@ -97,7 +97,6 @@ public enum Mixins implements IMixins {
 
     GALACTICRAFT(new MixinBuilder().setPhase(Phase.LATE)
         .addCommonMixins("galacticraft.TileEntityCoalGeneratorMixin", "galacticraft.SlotSpecificMixin")
-        .addClientMixins("galacticraft.NEIGalacticraftConfigMixin")
         .addRequiredMod(TargetMods.GALACTICRAFT)
         .setApplyIf(() -> Config.enableGalacticraftMain)),
 
